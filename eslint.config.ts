@@ -20,6 +20,13 @@ export default defineConfigWithVueTs(
 
   ...pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+  
+  {
+    files: ['**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': ['error', { ignores: ['index'] }],
+    },
+  },
 
   {
     ...pluginVitest.configs.recommended,
