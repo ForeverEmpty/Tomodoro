@@ -4,5 +4,8 @@ export const defaultSetting = {
     break: 5,
     rest: 15,
   },
+  focus: {
+    background: '',
+  },
   theme: 'system',
 }
