@@ -4,25 +4,69 @@
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --color-bg-main: var(--app-bg-main);
+  --color-text-main: var(--app-text-main);
+  --color-text-muted: var(--app-text-muted);
+  --color-text-subtle: var(--app-text-subtle);
+  --color-accent: var(--app-accent);
+  --color-surface: var(--app-surface);
+  --color-control-bg: var(--app-control-bg);
+  --color-border-soft: var(--app-border-soft);
+  --color-border-default: var(--app-border-default);
+  --color-hover-dark: var(--app-hover-dark);
+  --color-hover-text: var(--app-hover-text);
+  --color-selection: var(--app-selection);
+  --shadow-main: var(--app-shadow-main);
 }
 
 :root {
-  --bg-main: #f8fafc;
-  --text-main: #0f172a;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
-  --accent: #ef4444;
+  --app-bg-main: #f8fafc;
+  --app-text-main: #0f172a;
+  --app-text-muted: #94a3b8;
+  --app-text-subtle: #64748b;
+  --app-accent: #ef4444;
+  --app-surface: #ffffff;
+  --app-control-bg: #e2e8f0;
+  --app-border-soft: #f1f5f9;
+  --app-border-default: #e2e8f0;
+  --app-shadow-main: 0 12px 30px -16px rgb(148 163 184 / 0.65);
+  --app-hover-dark: #1e293b;
+  --app-hover-text: #475569;
+  --app-selection: #e2e8f0;
+}
 
-  --surface: #ffffff;
-  --control-bg: #e2e8f0;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --app-bg-main: #0f172a;
+    --app-text-main: #e2e8f0;
+    --app-text-muted: #64748b;
+    --app-text-subtle: #94a3b8;
+    --app-accent: #f87171;
+    --app-surface: #111827;
+    --app-control-bg: #1e293b;
+    --app-border-soft: #1e293b;
+    --app-border-default: #334155;
+    --app-shadow-main: 0 12px 30px -16px rgb(15 23 42 / 0.85);
+    --app-hover-dark: #334155;
+    --app-hover-text: #cbd5e1;
+    --app-selection: #334155;
+  }
+}
 
-  --border-soft: #f1f5f9;
-  --border-default: #e2e8f0;
-  --shadow-main: 0 12px 30px -16px rgb(148 163 184 / 0.65);
-
-  --hover-dark: #1e293b;
-  --hover-text: #475569;
-  --selection: #e2e8f0;
+:root[data-theme='dark'] {
+  --app-bg-main: #0f172a;
+  --app-text-main: #e2e8f0;
+  --app-text-muted: #64748b;
+  --app-text-subtle: #94a3b8;
+  --app-accent: #f87171;
+  --app-surface: #111827;
+  --app-control-bg: #1e293b;
+  --app-border-soft: #1e293b;
+  --app-border-default: #334155;
+  --app-shadow-main: 0 12px 30px -16px rgb(15 23 42 / 0.85);
+  --app-hover-dark: #334155;
+  --app-hover-text: #cbd5e1;
+  --app-selection: #334155;
 }
 
 @layer base {
@@ -31,8 +75,8 @@
   }
 
   ::selection {
-    background: var(--selection);
-    color: var(--text-main);
+    background: var(--color-selection);
+    color: var(--color-text-main);
   }
 
   html,
@@ -43,10 +87,13 @@
 
   body {
     margin: 0;
-    background: var(--bg-main);
-    color: var(--text-main);
+    background: var(--color-bg-main);
+    color: var(--color-text-main);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizelegibility;
+    transition:
+      background-color 0.28s ease,
+      color 0.28s ease;
   }
 
   button,
@@ -56,63 +103,5 @@
       background-color 0.2s ease,
       border-color 0.2s ease,
       box-shadow 0.2s ease;
-  }
-}
-
-@layer components {
-  .text-main {
-    color: var(--text-main);
-  }
-
-  .text-muted {
-    color: var(--text-muted);
-  }
-
-  .text-subtle {
-    color: var(--text-subtle);
-  }
-
-  .text-muted-hover:hover {
-    color: var(--hover-text);
-  }
-
-  .brand-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 9999px;
-    background: var(--accent);
-  }
-
-  .surface-card {
-    background: var(--surface);
-    border: 1px solid var(--border-default);
-    border-radius: 1rem;
-  }
-
-  .surface-control {
-    background: var(--control-bg);
-    border: 1px solid var(--border-soft);
-    border-radius: 9999px;
-  }
-
-  .btn-primary {
-    background: var(--text-main);
-    color: #fff;
-    border: 1px solid var(--border-default);
-    box-shadow: var(--shadow-main);
-  }
-
-  .btn-primary:hover {
-    background: var(--hover-dark);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--text-main);
-    border: 1px solid var(--border-default);
-  }
-
-  .btn-secondary:hover {
-    background: var(--surface);
   }
 }

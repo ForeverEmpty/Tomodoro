@@ -12,6 +12,20 @@ export const header = () => {
       },
     },
     {
+      path: '/focus',
+      label: 'Focus',
+      onClick: () => {
+        router.push('/focus')
+      },
+    },
+    {
+      path: '/sounds',
+      label: 'Sounds',
+      onClick: () => {
+        router.push('/sounds')
+      },
+    },
+    {
       path: '/setting',
       label: 'Settings',
       onClick: () => {

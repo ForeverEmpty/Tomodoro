@@ -4,10 +4,12 @@ import Header from './Header/index.vue'
 
 <template>
   <div
-    class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 selection:bg-slate-200 transition-colors duration-700"
+    class="min-h-screen w-full bg-bg-main text-text-main font-sans transition-colors duration-700 selection:bg-selection"
   >
     <Header />
-    <RouterView />
+    <main class="mx-auto flex h-screen w-full justify-center pt-24">
+      <RouterView />
+    </main>
   </div>
 </template>
 

@@ -5,7 +5,7 @@ export const useStorage = (storage: Storage = window.localStorage) => {
     _storage.setItem(key, value)
   }
 
-  const getItem = (key: string) => {
+  const getItem = (key: string): string | null => {
     return _storage.getItem(key)
   }
 
