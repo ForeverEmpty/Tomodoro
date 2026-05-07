@@ -1,6 +1,8 @@
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type TimerSettingKey = 'focus' | 'break' | 'rest'
 
+const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`
+
 export interface AppSetting {
   timer: Record<TimerSettingKey, number>
   focus: {
@@ -14,17 +16,17 @@ export const defaultBackgrounds = [
   {
     id: 'mist',
     label: 'Mist',
-    value: '/backgrounds/mist.svg',
+    value: publicAsset('backgrounds/mist.svg'),
   },
   {
     id: 'dawn',
     label: 'Dawn',
-    value: '/backgrounds/dawn.svg',
+    value: publicAsset('backgrounds/dawn.svg'),
   },
   {
     id: 'forest',
     label: 'Forest',
-    value: '/backgrounds/forest.svg',
+    value: publicAsset('backgrounds/forest.svg'),
   },
 ]
 

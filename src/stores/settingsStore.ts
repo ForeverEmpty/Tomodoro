@@ -8,6 +8,14 @@ const STORAGE_KEY = 'tomodoro-settings'
 
 const cloneDefaultSetting = (): AppSetting => structuredClone(defaultSetting)
 
+const normalizeBackground = (background: string) => {
+  const legacyBackground = defaultBackgrounds.find((option) =>
+    background.endsWith(`/backgrounds/${option.id}.svg`),
+  )
+
+  return legacyBackground?.value ?? background
+}
+
 const isThemeMode = (value: unknown): value is ThemeMode => {
   return value === 'system' || value === 'light' || value === 'dark'
 }
@@ -33,7 +41,7 @@ const hydrateSetting = (raw: string | null): AppSetting => {
     if (parsed.focus) {
       setting.focus.background =
         typeof parsed.focus.background === 'string'
-          ? parsed.focus.background
+          ? normalizeBackground(parsed.focus.background)
           : setting.focus.background
       setting.focus.uploadedBackground =
         typeof parsed.focus.uploadedBackground === 'string'
