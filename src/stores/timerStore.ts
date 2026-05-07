@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { defaultSetting } from '@/config/setting'
+import type { TimerSettingKey } from '@/config/setting'
+import { useSettingsStore } from '@/stores/settingsStore'
 
 export type TimerMode = 'Focus' | 'Break' | 'Rest'
 
-const MODE_TO_SETTING_KEY: Record<TimerMode, keyof typeof defaultSetting.timer> = {
+const MODE_TO_SETTING_KEY: Record<TimerMode, TimerSettingKey> = {
   Focus: 'focus',
   Break: 'break',
   Rest: 'rest',
@@ -15,10 +16,12 @@ const SECOND_PER_MINUTE = 60
 const TOTAL_ROUNDS = 4
 
 export const useTimerStore = defineStore('timer', () => {
+  const settingsStore = useSettingsStore()
+
   const buildModeDurations = () => {
     return (Object.keys(MODE_TO_SETTING_KEY) as TimerMode[]).reduce(
       (acc, mode) => {
-        acc[mode] = defaultSetting.timer[MODE_TO_SETTING_KEY[mode]] * SECOND_PER_MINUTE
+        acc[mode] = settingsStore.setting.timer[MODE_TO_SETTING_KEY[mode]] * SECOND_PER_MINUTE
         return acc
       },
       {} as Record<TimerMode, number>,

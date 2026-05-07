@@ -1,21 +1,17 @@
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useSettingsStore } from '@/stores/settingsStore'
 
-type ThemeMode = 'system' | 'light' | 'dark'
 type EffectiveTheme = 'light' | 'dark'
 
-const THEME_STORAGE_KEY = 'tomodoro-theme-mode'
 const DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
-const mode = ref<ThemeMode>('system')
 const systemPrefersDark = ref(false)
 
 let initialized = false
 let mediaQueryList: MediaQueryList | null = null
 
-const resolveEffectiveTheme = (
-  currentMode: ThemeMode,
-  prefersDark: boolean,
-): EffectiveTheme => {
+const resolveEffectiveTheme = (currentMode: string, prefersDark: boolean): EffectiveTheme => {
   if (currentMode === 'dark') {
     return 'dark'
   }
@@ -25,15 +21,7 @@ const resolveEffectiveTheme = (
   return prefersDark ? 'dark' : 'light'
 }
 
-const getStoredMode = (): ThemeMode => {
-  const savedMode = window.localStorage.getItem(THEME_STORAGE_KEY)
-  if (savedMode === 'light' || savedMode === 'dark' || savedMode === 'system') {
-    return savedMode
-  }
-  return 'system'
-}
-
-const applyModeToDocument = (currentMode: ThemeMode) => {
+const applyModeToDocument = (currentMode: string) => {
   const root = document.documentElement
   if (currentMode === 'system') {
     root.removeAttribute('data-theme')
@@ -49,8 +37,6 @@ const initializeTheme = () => {
 
   mediaQueryList = window.matchMedia(DARK_MEDIA_QUERY)
   systemPrefersDark.value = mediaQueryList.matches
-  mode.value = getStoredMode()
-  applyModeToDocument(mode.value)
 
   mediaQueryList.addEventListener('change', (event) => {
     systemPrefersDark.value = event.matches
@@ -59,33 +45,37 @@ const initializeTheme = () => {
   initialized = true
 }
 
-const setMode = (nextMode: ThemeMode) => {
-  mode.value = nextMode
-  window.localStorage.setItem(THEME_STORAGE_KEY, nextMode)
-  applyModeToDocument(nextMode)
-}
-
 export const useTheme = () => {
+  const settingsStore = useSettingsStore()
+  const { setting } = storeToRefs(settingsStore)
   initializeTheme()
 
   const effectiveTheme = computed<EffectiveTheme>(() =>
-    resolveEffectiveTheme(mode.value, systemPrefersDark.value),
+    resolveEffectiveTheme(setting.value.theme, systemPrefersDark.value),
   )
 
   const toggleTheme = () => {
-    if (mode.value === 'system') {
-      setMode('light')
+    if (setting.value.theme === 'system') {
+      settingsStore.setTheme('light')
       return
     }
-    if (mode.value === 'light') {
-      setMode('dark')
+    if (setting.value.theme === 'light') {
+      settingsStore.setTheme('dark')
       return
     }
-    setMode('system')
+    settingsStore.setTheme('system')
   }
 
+  watch(
+    () => setting.value.theme,
+    (theme) => {
+      applyModeToDocument(theme)
+    },
+    { immediate: true },
+  )
+
   return {
-    mode,
+    mode: computed(() => setting.value.theme),
     effectiveTheme,
     toggleTheme,
   }
