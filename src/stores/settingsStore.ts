@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, watch } from 'vue'
-import { defaultBackgrounds, defaultSetting } from '@/config/setting'
-import type { AppSetting, ThemeMode, TimerSettingKey } from '@/config/setting'
+import {
+  defaultBackgrounds,
+  defaultSetting,
+  defaultTimerSound,
+  defaultTimerSounds,
+} from '@/config/setting'
+import type { AppSetting, ThemeMode, TimerSettingKey, TimerSoundId } from '@/config/setting'
 import { useStorage } from '@/hooks/useStorage'
 
 const STORAGE_KEY = 'tomodoro-settings'
@@ -18,6 +23,10 @@ const normalizeBackground = (background: string) => {
 
 const isThemeMode = (value: unknown): value is ThemeMode => {
   return value === 'system' || value === 'light' || value === 'dark'
+}
+
+const isTimerSoundId = (value: unknown): value is TimerSoundId => {
+  return defaultTimerSounds.some((sound) => sound.id === value)
 }
 
 const hydrateSetting = (raw: string | null): AppSetting => {
@@ -52,6 +61,10 @@ const hydrateSetting = (raw: string | null): AppSetting => {
     if (isThemeMode(parsed.theme)) {
       setting.theme = parsed.theme
     }
+
+    if (parsed.sound && isTimerSoundId(parsed.sound.timerComplete)) {
+      setting.sound.timerComplete = parsed.sound.timerComplete
+    }
   } catch {
     return setting
   }
@@ -77,7 +90,13 @@ export const useSettingsStore = defineStore('settings', () => {
     return [...defaultBackgrounds, ...uploadedOption]
   })
 
+  const soundOptions = computed(() => defaultTimerSounds)
   const activeBackground = computed(() => setting.focus.background)
+  const activeTimerSound = computed(
+    () =>
+      defaultTimerSounds.find((sound) => sound.id === setting.sound.timerComplete) ??
+      defaultTimerSound,
+  )
 
   const setTheme = (theme: ThemeMode) => {
     setting.theme = theme
@@ -96,6 +115,10 @@ export const useSettingsStore = defineStore('settings', () => {
     setting.focus.background = background
   }
 
+  const setTimerCompleteSound = (soundId: TimerSoundId) => {
+    setting.sound.timerComplete = soundId
+  }
+
   watch(
     setting,
     () => {
@@ -107,10 +130,13 @@ export const useSettingsStore = defineStore('settings', () => {
   return {
     setting,
     backgroundOptions,
+    soundOptions,
     activeBackground,
+    activeTimerSound,
     setTheme,
     setTimerMinutes,
     setFocusBackground,
     setUploadedBackground,
+    setTimerCompleteSound,
   }
 })

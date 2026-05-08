@@ -46,6 +46,8 @@ export const useTimerStore = defineStore('timer', () => {
   const endsAtMs = ref<number | null>(null)
 
   let timerId: ReturnType<typeof setInterval> | null = null
+  let completionAudio: HTMLAudioElement | null = null
+  let completionAudioSrc = ''
 
   const currentModeDuration = computed(() => modeDurations.value[activeMode.value])
   const progress = computed(() => {
@@ -68,6 +70,33 @@ export const useTimerStore = defineStore('timer', () => {
     timerId = null
   }
 
+  const preloadCompletionSound = () => {
+    if (typeof Audio === 'undefined') {
+      return
+    }
+
+    const soundSrc = settingsStore.activeTimerSound.value
+    if (!soundSrc || soundSrc === completionAudioSrc) {
+      return
+    }
+
+    completionAudioSrc = soundSrc
+    completionAudio = new Audio(soundSrc)
+    completionAudio.preload = 'auto'
+    completionAudio.volume = 0.7
+    completionAudio.load()
+  }
+
+  const playCompletionSound = () => {
+    preloadCompletionSound()
+    if (!completionAudio) {
+      return
+    }
+
+    completionAudio.currentTime = 0
+    void completionAudio.play().catch(() => {})
+  }
+
   const syncRemainingFromEndTime = () => {
     if (endsAtMs.value === null) {
       return
@@ -83,6 +112,7 @@ export const useTimerStore = defineStore('timer', () => {
       completedRounds.value = Math.min(TOTAL_ROUNDS, completedRounds.value + 1)
     }
 
+    playCompletionSound()
     isRunning.value = false
     endsAtMs.value = null
     clearTicker()
@@ -127,6 +157,7 @@ export const useTimerStore = defineStore('timer', () => {
     }
 
     isRunning.value = true
+    preloadCompletionSound()
     endsAtMs.value = Date.now() + remainingSeconds.value * 1000
     syncRemainingFromEndTime()
     ensureTicker()

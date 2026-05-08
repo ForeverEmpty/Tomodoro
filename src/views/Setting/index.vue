@@ -5,6 +5,7 @@ import AboutSettingsPanel from './components/AboutSettingsPanel.vue'
 import FocusSettingsPanel from './components/FocusSettingsPanel.vue'
 import SettingsHeader from './components/SettingsHeader.vue'
 import SettingsSidebar from './components/SettingsSidebar.vue'
+import SoundSettingsPanel from './components/SoundSettingsPanel.vue'
 import ThemeSettingsPanel from './components/ThemeSettingsPanel.vue'
 import TimerSettingsPanel from './components/TimerSettingsPanel.vue'
 import { releaseInfo } from '@/config/release'
@@ -15,7 +16,7 @@ import { useTimerStore, type TimerMode } from '@/stores/timerStore'
 
 const settingsStore = useSettingsStore()
 const timerStore = useTimerStore()
-const { setting, backgroundOptions } = storeToRefs(settingsStore)
+const { setting, backgroundOptions, soundOptions } = storeToRefs(settingsStore)
 
 const aboutKey = 'about'
 const activeCategory = ref(Object.keys(defaultSetting)[0] ?? aboutKey)
@@ -23,6 +24,7 @@ const activeCategory = ref(Object.keys(defaultSetting)[0] ?? aboutKey)
 const categoryLabels: Record<string, string> = {
   timer: 'Timer',
   focus: 'Focus',
+  sound: 'Sound',
   theme: 'Theme',
   about: 'About',
 }
@@ -120,6 +122,13 @@ const onBackgroundUpload = (event: Event) => {
         :background-options="backgroundOptions"
         @select-background="settingsStore.setFocusBackground"
         @upload-background="onBackgroundUpload"
+      />
+
+      <SoundSettingsPanel
+        v-else-if="activeCategory === 'sound'"
+        :selected-sound="setting.sound.timerComplete"
+        :options="soundOptions"
+        @update-sound="settingsStore.setTimerCompleteSound"
       />
 
       <AboutSettingsPanel
