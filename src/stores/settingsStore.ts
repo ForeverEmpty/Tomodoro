@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import {
   defaultBackgrounds,
   defaultSetting,
@@ -8,8 +8,16 @@ import {
 } from '@/config/setting'
 import type { AppSetting, ThemeMode, TimerSettingKey, TimerSoundId } from '@/config/setting'
 import { useStorage } from '@/hooks/useStorage'
+import {
+  storeBackground,
+  getBackground,
+  blobToObjectURL,
+  revokeObjectURL,
+  deleteBackground,
+} from '@/utils/indexedDB'
 
 const STORAGE_KEY = 'tomodoro-settings'
+const UPLOADED_BACKGROUND_ID = 'uploaded-background'
 
 const cloneDefaultSetting = (): AppSetting => structuredClone(defaultSetting)
 
@@ -28,6 +36,17 @@ const isThemeMode = (value: unknown): value is ThemeMode => {
 const isTimerSoundId = (value: unknown): value is TimerSoundId => {
   return defaultTimerSounds.some((sound) => sound.id === value)
 }
+
+const clampSoundVolume = (value: unknown) => {
+  const volume = Number(value)
+  if (!Number.isFinite(volume)) {
+    return defaultSetting.sound.volume
+  }
+
+  return Math.min(1, Math.max(0, volume))
+}
+
+const isUploadedBackgroundMarker = (value: unknown) => value === 'uploaded'
 
 const hydrateSetting = (raw: string | null): AppSetting => {
   const setting = cloneDefaultSetting()
@@ -53,7 +72,7 @@ const hydrateSetting = (raw: string | null): AppSetting => {
           ? normalizeBackground(parsed.focus.background)
           : setting.focus.background
       setting.focus.uploadedBackground =
-        typeof parsed.focus.uploadedBackground === 'string'
+        isUploadedBackgroundMarker(parsed.focus.uploadedBackground)
           ? parsed.focus.uploadedBackground
           : setting.focus.uploadedBackground
     }
@@ -65,6 +84,10 @@ const hydrateSetting = (raw: string | null): AppSetting => {
     if (parsed.sound && isTimerSoundId(parsed.sound.timerComplete)) {
       setting.sound.timerComplete = parsed.sound.timerComplete
     }
+
+    if (parsed.sound) {
+      setting.sound.volume = clampSoundVolume(parsed.sound.volume)
+    }
   } catch {
     return setting
   }
@@ -75,14 +98,23 @@ const hydrateSetting = (raw: string | null): AppSetting => {
 export const useSettingsStore = defineStore('settings', () => {
   const { getItem, setItem } = useStorage()
   const setting = reactive<AppSetting>(hydrateSetting(getItem(STORAGE_KEY)))
+  const loadedBackgroundUrl = ref<string | null>(null)
+  const uploadedBackgroundIsVideo = ref(false)
+
+  const isUploadedBackground = computed(() => {
+    return setting.focus.background === 'uploaded'
+  })
 
   const backgroundOptions = computed(() => {
-    const uploadedOption = setting.focus.uploadedBackground
+    const hasUploaded = setting.focus.uploadedBackground === 'uploaded'
+    const uploadedOption = hasUploaded
       ? [
           {
             id: 'uploaded',
             label: 'Uploaded',
-            value: setting.focus.uploadedBackground,
+            value: loadedBackgroundUrl.value || 'uploaded',
+            selectValue: 'uploaded',
+            isVideo: uploadedBackgroundIsVideo.value,
           },
         ]
       : []
@@ -91,7 +123,17 @@ export const useSettingsStore = defineStore('settings', () => {
   })
 
   const soundOptions = computed(() => defaultTimerSounds)
-  const activeBackground = computed(() => setting.focus.background)
+
+  const activeBackground = computed(() => {
+    if (isUploadedBackground.value && loadedBackgroundUrl.value) {
+      return loadedBackgroundUrl.value
+    }
+    if (isUploadedBackground.value && !loadedBackgroundUrl.value) {
+      return ''
+    }
+    return setting.focus.background
+  })
+
   const activeTimerSound = computed(
     () =>
       defaultTimerSounds.find((sound) => sound.id === setting.sound.timerComplete) ??
@@ -110,13 +152,49 @@ export const useSettingsStore = defineStore('settings', () => {
     setting.focus.background = background
   }
 
-  const setUploadedBackground = (background: string) => {
-    setting.focus.uploadedBackground = background
-    setting.focus.background = background
+  const setUploadedBackground = async (file: File): Promise<void> => {
+    await storeBackground(UPLOADED_BACKGROUND_ID, file)
+    setting.focus.uploadedBackground = 'uploaded'
+    setting.focus.background = 'uploaded'
+    await loadUploadedBackground()
+  }
+
+  const loadUploadedBackground = async (): Promise<void> => {
+    if (setting.focus.uploadedBackground !== 'uploaded') {
+      return
+    }
+    try {
+      const background = await getBackground(UPLOADED_BACKGROUND_ID)
+      if (background) {
+        if (loadedBackgroundUrl.value) {
+          revokeObjectURL(loadedBackgroundUrl.value)
+        }
+        loadedBackgroundUrl.value = blobToObjectURL(background.data)
+        uploadedBackgroundIsVideo.value = background.type.startsWith('video/')
+      }
+    } catch {
+      loadedBackgroundUrl.value = null
+      uploadedBackgroundIsVideo.value = false
+    }
+  }
+
+  const clearUploadedBackground = async (): Promise<void> => {
+    if (loadedBackgroundUrl.value) {
+      revokeObjectURL(loadedBackgroundUrl.value)
+    }
+    await deleteBackground(UPLOADED_BACKGROUND_ID)
+    setting.focus.uploadedBackground = ''
+    setting.focus.background = defaultBackgrounds[0]?.value ?? ''
+    loadedBackgroundUrl.value = null
+    uploadedBackgroundIsVideo.value = false
   }
 
   const setTimerCompleteSound = (soundId: TimerSoundId) => {
     setting.sound.timerComplete = soundId
+  }
+
+  const setSoundVolume = (volume: number) => {
+    setting.sound.volume = Math.min(1, Math.max(0, volume))
   }
 
   watch(
@@ -133,10 +211,15 @@ export const useSettingsStore = defineStore('settings', () => {
     soundOptions,
     activeBackground,
     activeTimerSound,
+    isUploadedBackground,
+    uploadedBackgroundIsVideo,
     setTheme,
     setTimerMinutes,
     setFocusBackground,
     setUploadedBackground,
+    loadUploadedBackground,
+    clearUploadedBackground,
     setTimerCompleteSound,
+    setSoundVolume,
   }
 })

@@ -3,10 +3,12 @@ export interface BackgroundOption {
   id: string
   label: string
   value: string
+  selectValue?: string
+  isVideo?: boolean
 }
 
 defineProps<{
-  activeBackground: string
+  selectedBackground: string
   backgroundOptions: BackgroundOption[]
 }>()
 
@@ -14,6 +16,20 @@ const emit = defineEmits<{
   selectBackground: [background: string]
   uploadBackground: [event: Event]
 }>()
+
+const isVideoBackground = (background: BackgroundOption): boolean => {
+  if (background.isVideo) return true
+  const value = background.value
+  return (
+    value.toLowerCase().endsWith('.mp4') ||
+    value.toLowerCase().endsWith('.webm') ||
+    value.toLowerCase().endsWith('.ogg')
+  )
+}
+
+const backgroundSelectionKey = (background: BackgroundOption): string => {
+  return background.selectValue ?? background.value
+}
 </script>
 
 <template>
@@ -35,15 +51,25 @@ const emit = defineEmits<{
           type="button"
           class="overflow-hidden rounded-lg border text-left transition-colors"
           :class="
-            activeBackground === background.value
+            selectedBackground === backgroundSelectionKey(background)
               ? 'border-accent'
               : 'border-border-default hover:border-text-muted'
           "
-          @click="emit('selectBackground', background.value)"
+          @click="emit('selectBackground', backgroundSelectionKey(background))"
         >
           <span
+            v-if="!isVideoBackground(background)"
             class="block h-24 bg-cover bg-center"
             :style="{ backgroundImage: `url(${background.value})` }"
+          />
+          <video
+            v-else
+            class="block h-24 w-full object-cover"
+            autoplay
+            muted
+            loop
+            playsinline
+            :src="background.value"
           />
           <span class="block bg-surface px-3 py-2 text-xs font-medium text-text-main">
             {{ background.label }}
@@ -58,7 +84,12 @@ const emit = defineEmits<{
         class="inline-flex cursor-pointer items-center rounded-lg border border-border-default bg-surface px-4 py-2 text-sm font-medium text-text-main hover:bg-control-bg"
       >
         Upload image
-        <input type="file" accept="image/*" class="sr-only" @change="emit('uploadBackground', $event)" />
+        <input
+          type="file"
+          accept="image/*,video/*"
+          class="sr-only"
+          @change="emit('uploadBackground', $event)"
+        />
       </label>
     </section>
   </div>

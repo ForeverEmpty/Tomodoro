@@ -18,6 +18,7 @@ export interface AppSetting {
   }
   sound: {
     timerComplete: TimerSoundId
+    volume: number
   }
   theme: ThemeMode
 }
@@ -72,6 +73,7 @@ export const defaultSetting = {
   },
   sound: {
     timerComplete: defaultTimerSound.id,
+    volume: 0.7,
   },
   theme: 'system',
 } satisfies AppSetting

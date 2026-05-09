@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import AboutSettingsPanel from './components/AboutSettingsPanel.vue'
 import FocusSettingsPanel from './components/FocusSettingsPanel.vue'
@@ -17,6 +17,10 @@ import { useTimerStore, type TimerMode } from '@/stores/timerStore'
 const settingsStore = useSettingsStore()
 const timerStore = useTimerStore()
 const { setting, backgroundOptions, soundOptions } = storeToRefs(settingsStore)
+
+onMounted(() => {
+  settingsStore.loadUploadedBackground()
+})
 
 const aboutKey = 'about'
 const activeCategory = ref(Object.keys(defaultSetting)[0] ?? aboutKey)
@@ -61,9 +65,7 @@ const timerEntries = computed(
 )
 
 const toTitleCase = (value: string) => {
-  return value
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, (firstLetter) => firstLetter.toUpperCase())
+  return value.replace(/([A-Z])/g, ' $1').replace(/^./, (firstLetter) => firstLetter.toUpperCase())
 }
 
 const updateTimerSetting = (key: TimerSettingKey, rawValue: string) => {
@@ -76,19 +78,12 @@ const updateTimerSetting = (key: TimerSettingKey, rawValue: string) => {
   timerStore.setModeDuration(timerModeMap[key], minutes)
 }
 
-const onBackgroundUpload = (event: Event) => {
+const onBackgroundUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (!file) {
     return
   }
-
-  const reader = new FileReader()
-  reader.addEventListener('load', () => {
-    if (typeof reader.result === 'string') {
-      settingsStore.setUploadedBackground(reader.result)
-    }
-  })
-  reader.readAsDataURL(file)
+  await settingsStore.setUploadedBackground(file)
 }
 </script>
 
@@ -118,7 +113,7 @@ const onBackgroundUpload = (event: Event) => {
 
       <FocusSettingsPanel
         v-else-if="activeCategory === 'focus'"
-        :active-background="setting.focus.background"
+        :selected-background="setting.focus.background"
         :background-options="backgroundOptions"
         @select-background="settingsStore.setFocusBackground"
         @upload-background="onBackgroundUpload"
@@ -127,14 +122,16 @@ const onBackgroundUpload = (event: Event) => {
       <SoundSettingsPanel
         v-else-if="activeCategory === 'sound'"
         :selected-sound="setting.sound.timerComplete"
+        :volume="setting.sound.volume"
         :options="soundOptions"
         @update-sound="settingsStore.setTimerCompleteSound"
+        @update-volume="settingsStore.setSoundVolume"
       />
 
       <AboutSettingsPanel
         v-else-if="activeCategory === aboutKey"
         :version="releaseInfo.version"
-        :logs="[...releaseInfo.logs]"
+        :timeline="releaseInfo.timeline"
       />
     </main>
   </section>

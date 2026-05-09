@@ -83,7 +83,7 @@ export const useTimerStore = defineStore('timer', () => {
     completionAudioSrc = soundSrc
     completionAudio = new Audio(soundSrc)
     completionAudio.preload = 'auto'
-    completionAudio.volume = 0.7
+    completionAudio.volume = settingsStore.setting.sound.volume
     completionAudio.load()
   }
 
@@ -93,6 +93,7 @@ export const useTimerStore = defineStore('timer', () => {
       return
     }
 
+    completionAudio.volume = settingsStore.setting.sound.volume
     completionAudio.currentTime = 0
     void completionAudio.play().catch(() => {})
   }
