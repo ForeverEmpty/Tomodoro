@@ -1,62 +1,144 @@
 export const releaseInfo = {
-  "version": "0.9.2+e67445c",
-  "generatedAt": "2026-05-09T06:19:37.239Z",
+  "version": "0.9.2+c6dec14",
+  "generatedAt": "2026-05-09T06:36:17.869Z",
   "timeline": [
     {
-      "version": "0.9.2+e67445c",
-      "date": "2026-05-08",
+      "version": "0.9.2+c6dec14",
+      "date": "2026-05-09",
       "isCurrent": true,
+      "changes": [
+        {
+          "hash": "c6dec14",
+          "date": "2026-05-09",
+          "message": "feat: enhance settings media and changelog"
+        }
+      ]
+    },
+    {
+      "version": "0.7.0",
+      "date": "2026-05-08",
+      "isCurrent": false,
       "changes": [
         {
           "hash": "e67445c",
           "date": "2026-05-08",
           "message": "feat: add timer completion sounds"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.6.0",
+      "date": "2026-05-07",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "0af659d",
           "date": "2026-05-07",
           "message": "feat: add page transition animations"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.5.3",
+      "date": "2026-05-07",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "a621980",
           "date": "2026-05-07",
           "message": "fix: resolve GitHub Pages asset paths"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.5.2",
+      "date": "2026-05-07",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "191ab65",
           "date": "2026-05-07",
           "message": "fix: remove automatic Pages enablement"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.5.1",
+      "date": "2026-05-07",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "997cdc4",
           "date": "2026-05-07",
           "message": "fix: enable GitHub Pages in deploy workflow"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.5.0",
+      "date": "2026-05-07",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "0dbdd96",
           "date": "2026-05-07",
           "message": "feat: add GitHub Pages deploy workflow"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-05-07",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "23d4a4e",
           "date": "2026-05-07",
           "message": "feat: add settings release info and GitHub Pages deploy"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-04-23",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "c52f20f",
           "date": "2026-04-23",
           "message": "feat(index): add tasks panel and colocate index components"
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-04-23",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "591c498",
           "date": "2026-04-23",
           "message": "feat(timer): implement mode-aware countdown UI, theme toggle, and tailwind color tokens add useTimerStore with per-mode remaining time, pause/start/reset, and..."
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-04-22",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "d098e93",
           "date": "2026-04-22",
           "message": "feat: scaffold tomodoro layout, routes, and tailwind theme add Tailwind Vite plugin and global theme css tokens replace starter App with RouterView and add hea..."
-        },
+        }
+      ]
+    },
+    {
+      "version": "0.0.1",
+      "date": "2026-04-22",
+      "isCurrent": false,
+      "changes": [
         {
           "hash": "416b4af",
           "date": "2026-04-22",
