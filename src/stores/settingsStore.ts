@@ -100,6 +100,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const setting = reactive<AppSetting>(hydrateSetting(getItem(STORAGE_KEY)))
   const loadedBackgroundUrl = ref<string | null>(null)
   const uploadedBackgroundIsVideo = ref(false)
+  let loadUploadedBackgroundPromise: Promise<void> | null = null
 
   const isUploadedBackground = computed(() => {
     return setting.focus.background === 'uploaded'
@@ -160,22 +161,32 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   const loadUploadedBackground = async (): Promise<void> => {
-    if (setting.focus.uploadedBackground !== 'uploaded') {
-      return
+    if (loadUploadedBackgroundPromise) {
+      return loadUploadedBackgroundPromise
     }
-    try {
-      const background = await getBackground(UPLOADED_BACKGROUND_ID)
-      if (background) {
-        if (loadedBackgroundUrl.value) {
-          revokeObjectURL(loadedBackgroundUrl.value)
-        }
-        loadedBackgroundUrl.value = blobToObjectURL(background.data)
-        uploadedBackgroundIsVideo.value = background.type.startsWith('video/')
+
+    loadUploadedBackgroundPromise = (async () => {
+      if (setting.focus.uploadedBackground !== 'uploaded') {
+        return
       }
-    } catch {
-      loadedBackgroundUrl.value = null
-      uploadedBackgroundIsVideo.value = false
-    }
+      try {
+        const background = await getBackground(UPLOADED_BACKGROUND_ID)
+        if (background) {
+          if (loadedBackgroundUrl.value) {
+            revokeObjectURL(loadedBackgroundUrl.value)
+          }
+          loadedBackgroundUrl.value = blobToObjectURL(background.data)
+          uploadedBackgroundIsVideo.value = background.type.startsWith('video/')
+        }
+      } catch {
+        loadedBackgroundUrl.value = null
+        uploadedBackgroundIsVideo.value = false
+      }
+    })().finally(() => {
+      loadUploadedBackgroundPromise = null
+    })
+
+    return loadUploadedBackgroundPromise
   }
 
   const clearUploadedBackground = async (): Promise<void> => {

@@ -3,14 +3,39 @@ const DB_VERSION = 1
 const STORE_NAME = 'backgrounds'
 
 let db: IDBDatabase | null = null
+let openPromise: Promise<IDBDatabase> | null = null
+
+const resetCachedDB = (database?: IDBDatabase) => {
+  if (!database || database === db) {
+    db = null
+  }
+}
+
+const isInvalidStateError = (error: unknown) => {
+  return error instanceof DOMException && error.name === 'InvalidStateError'
+}
+
+const bindConnectionEvents = (database: IDBDatabase) => {
+  database.addEventListener('close', () => {
+    resetCachedDB(database)
+  })
+
+  database.addEventListener('versionchange', () => {
+    resetCachedDB(database)
+    database.close()
+  })
+}
 
 const openDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    if (db) {
-      resolve(db)
-      return
-    }
+  if (db) {
+    return Promise.resolve(db)
+  }
 
+  if (openPromise) {
+    return openPromise
+  }
+
+  const promise: Promise<IDBDatabase> = new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
 
     request.onerror = () => {
@@ -19,6 +44,7 @@ const openDB = (): Promise<IDBDatabase> => {
 
     request.onsuccess = () => {
       db = request.result
+      bindConnectionEvents(db)
       resolve(db)
     }
 
@@ -28,7 +54,31 @@ const openDB = (): Promise<IDBDatabase> => {
         database.createObjectStore(STORE_NAME, { keyPath: 'id' })
       }
     }
+  }).finally(() => {
+    openPromise = null
   })
+
+  openPromise = promise
+
+  return promise
+}
+
+const runWithDB = async <T>(
+  operation: (database: IDBDatabase) => Promise<T>,
+  shouldRetry = true,
+): Promise<T> => {
+  const database = await openDB()
+
+  try {
+    return await operation(database)
+  } catch (error) {
+    if (shouldRetry && isInvalidStateError(error)) {
+      resetCachedDB(database)
+      return runWithDB(operation, false)
+    }
+
+    throw error
+  }
 }
 
 export interface StoredBackground {
@@ -39,8 +89,7 @@ export interface StoredBackground {
 }
 
 export const storeBackground = async (id: string, file: File): Promise<void> => {
-  const database = await openDB()
-  return new Promise((resolve, reject) => {
+  return runWithDB((database) => new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME], 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
 
@@ -53,33 +102,41 @@ export const storeBackground = async (id: string, file: File): Promise<void> => 
 
     const request = store.put(background)
 
-    request.onsuccess = () => resolve()
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error)
+    transaction.onabort = () => reject(transaction.error)
     request.onerror = () => reject(request.error)
-  })
+  }))
 }
 
 export const getBackground = async (id: string): Promise<StoredBackground | null> => {
-  const database = await openDB()
-  return new Promise((resolve, reject) => {
+  return runWithDB((database) => new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME], 'readonly')
     const store = transaction.objectStore(STORE_NAME)
     const request = store.get(id)
+    let result: StoredBackground | null = null
 
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => {
+      result = request.result ?? null
+    }
+    transaction.oncomplete = () => resolve(result)
+    transaction.onerror = () => reject(transaction.error)
+    transaction.onabort = () => reject(transaction.error)
     request.onerror = () => reject(request.error)
-  })
+  }))
 }
 
 export const deleteBackground = async (id: string): Promise<void> => {
-  const database = await openDB()
-  return new Promise((resolve, reject) => {
+  return runWithDB((database) => new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME], 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
     const request = store.delete(id)
 
-    request.onsuccess = () => resolve()
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error)
+    transaction.onabort = () => reject(transaction.error)
     request.onerror = () => reject(request.error)
-  })
+  }))
 }
 
 export const blobToObjectURL = (blob: Blob): string => {
