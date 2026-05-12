@@ -8,6 +8,15 @@ import { useTasksStore } from '@/stores/tasksStore'
 const tasksStore = useTasksStore()
 const { tasks, pendingCount } = storeToRefs(tasksStore)
 const isOpen = ref(false)
+
+withDefaults(
+  defineProps<{
+    placement?: 'top' | 'bottom'
+  }>(),
+  {
+    placement: 'top',
+  },
+)
 </script>
 
 <template>
@@ -21,6 +30,7 @@ const isOpen = ref(false)
       v-if="isOpen"
       :tasks="tasks"
       :pending-count="pendingCount"
+      :placement="placement"
       @toggle-task="tasksStore.toggleTask"
     />
   </div>

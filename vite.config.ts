@@ -9,7 +9,13 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   base: process.env.VITE_BASE_PATH ?? '/',
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'meting-js',
+        },
+      },
+    }),
     tailwindcss(),
     vueDevTools(),
   ],

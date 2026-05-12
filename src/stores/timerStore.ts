@@ -113,6 +113,10 @@ export const useTimerStore = defineStore('timer', () => {
       completedRounds.value = Math.min(TOTAL_ROUNDS, completedRounds.value + 1)
     }
 
+    if (activeMode.value === 'Rest' && completedRounds.value >= TOTAL_ROUNDS) {
+      completedRounds.value = 0
+    }
+
     playCompletionSound()
     isRunning.value = false
     endsAtMs.value = null

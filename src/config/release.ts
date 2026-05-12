@@ -1,11 +1,47 @@
 export const releaseInfo = {
-  "version": "0.9.2+c6dec14",
-  "generatedAt": "2026-05-09T06:36:17.869Z",
+  "version": "1.0.0",
+  "generatedAt": "2026-05-12T08:44:05.735Z",
   "timeline": [
     {
-      "version": "0.9.2+c6dec14",
-      "date": "2026-05-09",
+      "version": "1.0.0",
+      "date": "2026-05-12",
       "isCurrent": true,
+      "changes": [
+        {
+          "hash": "50ed618",
+          "date": "2026-05-12",
+          "message": "feat: release 1.0 music library and persistent player"
+        }
+      ]
+    },
+    {
+      "version": "0.9.1",
+      "date": "2026-05-09",
+      "isCurrent": false,
+      "changes": [
+        {
+          "hash": "d45a016",
+          "date": "2026-05-09",
+          "message": "fix: harden uploaded background IndexedDB access"
+        }
+      ]
+    },
+    {
+      "version": "0.9.0",
+      "date": "2026-05-09",
+      "isCurrent": false,
+      "changes": [
+        {
+          "hash": "326cd93",
+          "date": "2026-05-09",
+          "message": "feat: generate versioned changelog timeline"
+        }
+      ]
+    },
+    {
+      "version": "0.8.0",
+      "date": "2026-05-09",
+      "isCurrent": false,
       "changes": [
         {
           "hash": "c6dec14",

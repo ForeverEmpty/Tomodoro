@@ -31,7 +31,7 @@ const { tasks, completedCount, totalCount } = storeToRefs(tasksStore)
 
     <p
       v-else
-      class="m-0 rounded-xl border border-dashed border-border-default px-3 py-4 text-sm text-text-muted"
+      class="m-0 px-3 py-4 text-center text-sm text-text-muted"
     >
       No tasks yet. Add one to get started.
     </p>

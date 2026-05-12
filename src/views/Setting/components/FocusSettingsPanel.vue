@@ -57,10 +57,13 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
           "
           @click="emit('selectBackground', backgroundSelectionKey(background))"
         >
-          <span
+          <img
             v-if="!isVideoBackground(background)"
-            class="block h-24 bg-cover bg-center"
-            :style="{ backgroundImage: `url(${background.value})` }"
+            :src="background.value"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            class="block h-24 w-full object-cover"
           />
           <video
             v-else
