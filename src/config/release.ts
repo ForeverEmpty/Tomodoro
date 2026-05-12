@@ -1,6 +1,6 @@
 export const releaseInfo = {
   "version": "1.0.0",
-  "generatedAt": "2026-05-12T08:44:05.735Z",
+  "generatedAt": "2026-05-12T08:46:25.804Z",
   "timeline": [
     {
       "version": "1.0.0",
@@ -8,7 +8,7 @@ export const releaseInfo = {
       "isCurrent": true,
       "changes": [
         {
-          "hash": "50ed618",
+          "hash": "3387d4a",
           "date": "2026-05-12",
           "message": "feat: release 1.0 music library and persistent player"
         }
