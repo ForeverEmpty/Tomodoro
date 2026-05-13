@@ -1,6 +1,6 @@
 {
   "name": "tomodoro",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.27.0",

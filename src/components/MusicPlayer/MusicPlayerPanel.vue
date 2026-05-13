@@ -8,9 +8,10 @@ defineProps<{
 }>()
 
 type APlayerInstance = {
-  on: (event: 'play' | 'pause' | 'ended', handler: () => void) => void
+  audio?: HTMLAudioElement
+  on: (event: 'play' | 'pause' | 'ended' | 'error', handler: () => void) => void
   pause: () => void
-  play: () => void
+  play: () => Promise<void> | void
   seek: (time: number) => void
 }
 
@@ -22,8 +23,14 @@ const musicStore = useMusicStore()
 const { currentTrack, metingLoop, metingOrder, playerKey, playerSource, playMode, shouldAutoplay } =
   storeToRefs(musicStore)
 const metingElement = ref<MetingElement | null>(null)
+const playbackErrorMessage = ref('')
 let hookedPlayer: APlayerInstance | null = null
+let hookedAudio: HTMLAudioElement | null = null
 let hookTimer: ReturnType<typeof setTimeout> | null = null
+let playbackErrorTimer: ReturnType<typeof setTimeout> | null = null
+let pendingPlaybackErrorTimer: ReturnType<typeof setTimeout> | null = null
+let sourceValidationSequence = 0
+let playbackAttemptSequence = 0
 
 const playModeLabel = computed(() => {
   if (playMode.value === 'repeat-one') {
@@ -85,6 +92,162 @@ const clearHookTimer = () => {
   hookTimer = null
 }
 
+const clearPlaybackErrorTimer = () => {
+  if (!playbackErrorTimer) {
+    return
+  }
+
+  clearTimeout(playbackErrorTimer)
+  playbackErrorTimer = null
+}
+
+const clearPendingPlaybackErrorTimer = () => {
+  if (!pendingPlaybackErrorTimer) {
+    return
+  }
+
+  clearTimeout(pendingPlaybackErrorTimer)
+  pendingPlaybackErrorTimer = null
+}
+
+const showPlaybackError = (message = '该歌曲暂时无法播放。') => {
+  playbackErrorMessage.value = message
+  clearPlaybackErrorTimer()
+  playbackErrorTimer = setTimeout(() => {
+    playbackErrorMessage.value = ''
+    playbackErrorTimer = null
+  }, 3200)
+}
+
+const getAudioSource = () => {
+  const audio = hookedAudio
+  return audio?.currentSrc || audio?.src || ''
+}
+
+const audioHasPlayableData = (audio: HTMLAudioElement) => {
+  return audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA || audio.currentTime > 0
+}
+
+const requestAudioSource = async (url: string, method: 'HEAD' | 'GET') => {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 3500)
+
+  try {
+    return await fetch(url, {
+      cache: 'no-store',
+      method,
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+const validateAudioSource = async (url: string) => {
+  try {
+    const headResponse = await requestAudioSource(url, 'HEAD')
+    if (headResponse.status === 405 || headResponse.status === 501) {
+      const getResponse = await requestAudioSource(url, 'GET')
+      return getResponse.ok
+    }
+
+    return headResponse.ok
+  } catch {
+    // Some music hosts block fetch/CORS while still allowing media playback.
+    return undefined
+  }
+}
+
+const scheduleAudioSourceValidation = (attempt = 0) => {
+  const sequence = ++sourceValidationSequence
+
+  window.setTimeout(() => {
+    if (sequence !== sourceValidationSequence || !shouldAutoplay.value) {
+      return
+    }
+
+    const url = getAudioSource()
+    if (!url) {
+      if (attempt < 15) {
+        scheduleAudioSourceValidation(attempt + 1)
+      }
+      return
+    }
+
+    void (async () => {
+      const canPlay = await validateAudioSource(url)
+      if (sequence !== sourceValidationSequence || canPlay !== false || !shouldAutoplay.value) {
+        return
+      }
+
+      const audio = hookedAudio
+      if (!audio || audioHasPlayableData(audio)) {
+        return
+      }
+
+      musicStore.setPlaybackState(false)
+      showPlaybackError('该歌曲暂时无法播放，播放地址不可用。')
+    })()
+  }, 500)
+}
+
+const schedulePlaybackErrorCheck = () => {
+  clearPendingPlaybackErrorTimer()
+  const attemptSequence = ++playbackAttemptSequence
+
+  pendingPlaybackErrorTimer = setTimeout(() => {
+    pendingPlaybackErrorTimer = null
+    if (attemptSequence !== playbackAttemptSequence) {
+      return
+    }
+
+    const audio = hookedAudio
+    if (!audio || !shouldAutoplay.value) {
+      return
+    }
+
+    const hasFailedSource =
+      Boolean(audio.error) ||
+      audio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE ||
+      (Boolean(getAudioSource()) && audio.readyState === HTMLMediaElement.HAVE_NOTHING)
+
+    if (audioHasPlayableData(audio) || !hasFailedSource) {
+      return
+    }
+
+    musicStore.setPlaybackState(false)
+    showPlaybackError('该歌曲暂时无法播放，可能需要会员权限或源站不可用。')
+  }, 5200)
+
+  scheduleAudioSourceValidation()
+}
+
+const attemptPlay = (player: APlayerInstance) => {
+  try {
+    const playResult = player.play()
+    if (playResult instanceof Promise) {
+      playResult.catch(() => {
+        schedulePlaybackErrorCheck()
+      })
+    }
+  } catch {
+    schedulePlaybackErrorCheck()
+  }
+
+  schedulePlaybackErrorCheck()
+}
+
+const onAudioError = () => {
+  schedulePlaybackErrorCheck()
+}
+
+const onAudioPlayable = () => {
+  clearPendingPlaybackErrorTimer()
+  sourceValidationSequence += 1
+  playbackAttemptSequence += 1
+  playbackErrorMessage.value = ''
+}
+
 const hookAPlayer = async (attempt = 0) => {
   clearHookTimer()
   await nextTick()
@@ -104,12 +267,24 @@ const hookAPlayer = async (attempt = 0) => {
   }
 
   hookedPlayer = player
-  player.on('play', () => musicStore.setPlaybackState(true))
+  if (hookedAudio !== player.audio) {
+    hookedAudio?.removeEventListener('error', onAudioError)
+    hookedAudio?.removeEventListener('canplay', onAudioPlayable)
+    hookedAudio?.removeEventListener('playing', onAudioPlayable)
+    hookedAudio = player.audio ?? null
+    hookedAudio?.addEventListener('error', onAudioError)
+    hookedAudio?.addEventListener('canplay', onAudioPlayable)
+    hookedAudio?.addEventListener('playing', onAudioPlayable)
+  }
+  player.on('play', () => {
+    musicStore.setPlaybackState(true)
+  })
   player.on('pause', () => musicStore.setPlaybackState(false))
+  player.on('error', onAudioError)
   player.on('ended', () => {
     if (playMode.value === 'repeat-one') {
       player.seek(0)
-      player.play()
+      attemptPlay(player)
       musicStore.setPlaybackState(true)
       return
     }
@@ -118,12 +293,13 @@ const hookAPlayer = async (attempt = 0) => {
   })
 
   if (shouldAutoplay.value) {
-    player.play()
+    attemptPlay(player)
   }
 }
 
 watch(playerKey, () => {
   hookedPlayer = null
+  sourceValidationSequence += 1
   void hookAPlayer()
 }, { flush: 'post', immediate: true })
 
@@ -133,15 +309,25 @@ watch(shouldAutoplay, (autoplay) => {
   }
 
   if (autoplay) {
-    hookedPlayer.play()
+    attemptPlay(hookedPlayer)
     return
   }
 
+  clearPendingPlaybackErrorTimer()
+  playbackAttemptSequence += 1
+  sourceValidationSequence += 1
   hookedPlayer.pause()
 })
 
 onBeforeUnmount(() => {
   clearHookTimer()
+  clearPlaybackErrorTimer()
+  clearPendingPlaybackErrorTimer()
+  sourceValidationSequence += 1
+  playbackAttemptSequence += 1
+  hookedAudio?.removeEventListener('error', onAudioError)
+  hookedAudio?.removeEventListener('canplay', onAudioPlayable)
+  hookedAudio?.removeEventListener('playing', onAudioPlayable)
 })
 </script>
 
@@ -172,6 +358,16 @@ onBeforeUnmount(() => {
       ref="metingElement"
       v-bind="playerAttributes"
     />
+
+    <Transition name="music-error-toast">
+      <div
+        v-if="playbackErrorMessage"
+        class="music-error-toast"
+        role="status"
+      >
+        {{ playbackErrorMessage }}
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -303,5 +499,37 @@ onBeforeUnmount(() => {
 .meting-player-shell :deep(.aplayer .aplayer-icon-loop),
 .meting-player-shell :deep(.aplayer .aplayer-icon-order) {
   display: none !important;
+}
+
+.music-error-toast {
+  position: fixed;
+  left: 50%;
+  top: 1rem;
+  z-index: 90;
+  max-width: min(24rem, calc(100vw - 2rem));
+  transform: translateX(-50%);
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 72%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: var(--shadow-main);
+  color: var(--color-text-main);
+  padding: 0.625rem 0.875rem;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  backdrop-filter: blur(18px);
+}
+
+.music-error-toast-enter-active,
+.music-error-toast-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.music-error-toast-enter-from,
+.music-error-toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -0.5rem);
 }
 </style>
