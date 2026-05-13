@@ -20,6 +20,7 @@ import type {
 const musicStore = useMusicStore()
 const { currentTrack, isPlaying, playerSource } = storeToRefs(musicStore)
 const RECENT_PLAYLIST_ID = 'recent'
+const RECENT_TRACK_LIMIT = 20
 const PLAYLISTS_STORAGE_KEY = 'tomodoro-sounds-playlists'
 
 const normalizePlaylist = (playlist: Partial<Playlist>): Playlist | null => {
@@ -99,7 +100,6 @@ const categories = ref<PlatformCategory[]>([
   },
 ])
 const playlists = ref<Playlist[]>(loadSavedPlaylists())
-const recentTrackIds = ref<string[]>([])
 const activeView = ref<{ type: 'category' | 'playlist'; id: string }>({
   type: 'category',
   id: 'local',
@@ -125,14 +125,17 @@ const hotMusicUpdatedAt = ref<Record<HotboardType, string>>({
   'netease-music': '',
   'qq-music': '',
 })
+const recentTracks = ref<(MusicTrack | PlaylistHotTrack)[]>([])
 
 const playlistItems = computed<Playlist[]>(() => [
   {
     id: RECENT_PLAYLIST_ID,
     name: 'Recently Played',
-    count: recentTrackIds.value.length,
-    trackIds: recentTrackIds.value,
-    hotTracks: [],
+    count: recentTracks.value.length,
+    trackIds: recentTracks.value
+      .filter((track): track is MusicTrack => !isHotPlaylistTrack(track))
+      .map((track) => track.id),
+    hotTracks: recentTracks.value.filter(isHotPlaylistTrack),
   },
   ...playlists.value,
 ])
@@ -154,6 +157,10 @@ const activeListView = computed<MusicListView | undefined>(() => {
 
 const visibleTracks = computed(() => {
   if (activeView.value.type === 'playlist') {
+    if (activeView.value.id === RECENT_PLAYLIST_ID) {
+      return recentTracks.value
+    }
+
     const playlist = playlistItems.value.find((item) => item.id === activeView.value.id)
     if (!playlist) {
       return []
@@ -196,6 +203,13 @@ const isHotPlaylistTrack = (track: MusicTrack | PlaylistHotTrack): track is Play
   'auto' in track
 )
 
+const addRecentTrack = (track: MusicTrack | PlaylistHotTrack) => {
+  recentTracks.value = [
+    track,
+    ...recentTracks.value.filter((item) => item.id !== track.id),
+  ].slice(0, RECENT_TRACK_LIMIT)
+}
+
 const playTrack = (track: MusicTrack | PlaylistHotTrack) => {
   if (isHotPlaylistTrack(track)) {
     const playlist = activeView.value.type === 'playlist'
@@ -206,15 +220,13 @@ const playTrack = (track: MusicTrack | PlaylistHotTrack) => {
       playlist?.hotTracks && playlist.hotTracks.length > 0 ? playlist.hotTracks : [track],
     )
     musicStore.play()
+    addRecentTrack(track)
     return
   }
 
   musicStore.selectTrack(track.id)
   musicStore.play()
-  recentTrackIds.value = [track.id, ...recentTrackIds.value.filter((id) => id !== track.id)].slice(
-    0,
-    5,
-  )
+  addRecentTrack(track)
 }
 
 const getHotTrackMetingInfo = (track: HotMusicItem) => {
@@ -260,6 +272,7 @@ const playHotTrack = (track: HotMusicItem) => {
 
   musicStore.selectMetingTrack(selectedTrack, hotQueue)
   musicStore.play()
+  addRecentTrack(selectedTrack)
 }
 
 const addHotTrackToPlaylist = (track: HotMusicItem, playlistId: string) => {
@@ -375,7 +388,7 @@ const removeTrackFromActivePlaylist = (trackId: string) => {
   }
 
   if (activeView.value.id === RECENT_PLAYLIST_ID) {
-    recentTrackIds.value = recentTrackIds.value.filter((id) => id !== trackId)
+    recentTracks.value = recentTracks.value.filter((track) => track.id !== trackId)
     return
   }
 
