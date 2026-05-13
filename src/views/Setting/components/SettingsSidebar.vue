@@ -15,13 +15,13 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <aside class="w-48 shrink-0 border-r border-border-soft pr-4">
-    <nav class="space-y-1">
+  <aside class="w-full shrink-0 border-b border-border-soft pb-3 md:w-48 md:border-b-0 md:border-r md:pb-0 md:pr-4">
+    <nav class="mobile-x-scroll flex gap-2 overflow-x-auto md:block md:space-y-1 md:overflow-visible">
       <button
         v-for="category in categories"
         :key="category.key"
         type="button"
-        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors"
+        class="flex shrink-0 items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors md:w-full"
         :class="
           activeCategory === category.key
             ? 'bg-control-bg text-text-main'

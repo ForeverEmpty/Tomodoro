@@ -39,7 +39,7 @@ const selectTheme = (theme: ThemeMode) => {
       <p class="m-0 mt-1 text-xs text-text-muted">{{ t('theme.description') }}</p>
     </div>
 
-    <div class="relative w-56">
+    <div class="relative w-full sm:w-56">
       <button
         type="button"
         class="flex h-10 w-full items-center justify-between rounded-lg border border-border-default bg-surface px-3 text-left text-sm text-text-main shadow-sm outline-none transition hover:bg-control-bg/60 focus:ring-2 focus:ring-control-bg"

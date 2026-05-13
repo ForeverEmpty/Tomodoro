@@ -95,7 +95,7 @@ const submitRename = (activeView?: MusicListView) => {
 
 <template>
   <main class="flex min-h-0 flex-col">
-    <div class="flex items-center justify-between gap-4 border-b border-border-soft pb-4">
+    <div class="flex flex-col items-start justify-between gap-3 border-b border-border-soft pb-4 sm:flex-row sm:items-center sm:gap-4">
       <div class="min-w-0">
         <p class="m-0 text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
           {{ activeView?.source }}
@@ -168,7 +168,7 @@ const submitRename = (activeView?: MusicListView) => {
       </div>
     </div>
 
-    <div class="music-list-scroll min-h-0 flex-1 overflow-y-auto py-4 pr-2">
+    <div class="music-list-scroll min-h-0 flex-1 overflow-y-auto py-4 pr-0 sm:pr-2">
       <p
         v-if="tracks.length === 0"
         class="m-0 px-4 py-8 text-center text-sm text-text-muted"
@@ -179,11 +179,11 @@ const submitRename = (activeView?: MusicListView) => {
         <div
           v-for="(track, index) in tracks"
           :key="track.id"
-          class="group grid items-center gap-2 rounded-xl px-3 py-2 text-left transition duration-200 hover:bg-bg-main/30 hover:shadow-sm"
+          class="group grid items-center gap-1.5 rounded-xl px-2 py-2 text-left transition duration-200 hover:bg-bg-main/30 hover:shadow-sm sm:gap-2 sm:px-3"
           :class="[
             removable
-              ? 'grid-cols-[minmax(0,1fr)_2.5rem_2.5rem_2.5rem]'
-              : 'grid-cols-[minmax(0,1fr)_2.5rem_2.5rem]',
+              ? 'grid-cols-[minmax(0,1fr)_2.25rem_2.25rem_2.25rem] sm:grid-cols-[minmax(0,1fr)_2.5rem_2.5rem_2.5rem]'
+              : 'grid-cols-[minmax(0,1fr)_2.25rem_2.25rem] sm:grid-cols-[minmax(0,1fr)_2.5rem_2.5rem]',
             {
               'border border-selected-border bg-selected-bg text-selected-text':
                 currentTrack?.id === track.id,
@@ -193,7 +193,7 @@ const submitRename = (activeView?: MusicListView) => {
         >
           <button
             type="button"
-            class="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)_8rem] items-center gap-3 text-left"
+            class="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-2 text-left sm:grid-cols-[2.5rem_minmax(0,1fr)_8rem] sm:gap-3"
             @click="emit('playTrack', track)"
           >
             <span class="font-mono text-xs text-text-muted tabular-nums transition group-hover:text-text-main">
@@ -213,7 +213,7 @@ const submitRename = (activeView?: MusicListView) => {
                 {{ track.artist }}
               </span>
             </span>
-            <span class="truncate text-xs text-text-muted transition group-hover:text-text-main/70">
+            <span class="hidden truncate text-xs text-text-muted transition group-hover:text-text-main/70 sm:block">
               {{ isHotTrack(track) ? (track.source === 'qq-music' ? t('music.qqMusic') : t('music.cloudMusic')) : t('music.localAudio') }}
             </span>
           </button>
@@ -221,7 +221,7 @@ const submitRename = (activeView?: MusicListView) => {
           <div class="relative flex justify-center">
             <button
               type="button"
-              class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
+              class="inline-flex size-8 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main sm:size-9"
               :aria-expanded="openTrackId === track.id"
               :aria-label="t('aria.addTrackToPlaylist')"
               @click="togglePlaylistMenu(track.id)"
@@ -275,7 +275,7 @@ const submitRename = (activeView?: MusicListView) => {
           <button
             v-if="removable"
             type="button"
-            class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
+            class="inline-flex size-8 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main sm:size-9"
             :aria-label="t('aria.removeTrackFromPlaylist')"
             @click="emit('removeTrack', track.id)"
           >
@@ -298,7 +298,7 @@ const submitRename = (activeView?: MusicListView) => {
           </button>
 
           <span
-            class="inline-flex size-9 items-center justify-center rounded-full border transition group-hover:bg-text-main group-hover:text-bg-main"
+            class="inline-flex size-8 items-center justify-center rounded-full border transition group-hover:bg-text-main group-hover:text-bg-main sm:size-9"
             :class="
               currentTrack?.id === track.id && isPlaying
                 ? 'border-selected-border bg-surface text-text-main shadow-sm'

@@ -77,7 +77,7 @@ const panelPlacement = computed(() => {
     Math.max(EDGE_GAP, width - EDGE_GAP - actualPanelWidth),
   )
 
-  if (availableRight >= actualPanelWidth || availableRight >= availableLeft) {
+  if (availableRight >= actualPanelWidth) {
     return {
       originClass: verticalTop > bubbleTop ? 'origin-top-left' : 'origin-bottom-left',
       style: {
@@ -135,7 +135,7 @@ const panelPlacement = computed(() => {
 const dockedPanelStyle = computed(() => {
   const { width, height } = viewport.value
   const { width: actualPanelWidth, height: actualPanelHeight } = panelSize.value
-  const centerX = width / 2 + 136
+  const centerX = width < 768 ? width / 2 : width / 2 + 136
   const left = clamp(
     centerX - actualPanelWidth / 2,
     EDGE_GAP,
@@ -231,11 +231,18 @@ const startDragging = (event: PointerEvent) => {
 }
 
 const onPointerDown = (event: PointerEvent) => {
+  if (event.pointerType !== 'mouse') {
+    event.preventDefault()
+  }
+
   pointerStart = { x: event.clientX, y: event.clientY }
   dragOffset.value = {
     x: event.clientX - position.value.x,
     y: event.clientY - position.value.y,
   }
+  activePointerId = event.pointerId
+  const target = event.currentTarget as HTMLElement | null
+  target?.setPointerCapture?.(event.pointerId)
   longPressTimer = setTimeout(() => {
     startDragging(event)
   }, LONG_PRESS_MS)
@@ -255,8 +262,10 @@ const onPointerMove = (event: PointerEvent) => {
   movePlayer(event)
 }
 
-const onPointerUp = () => {
+const onPointerUp = (event: PointerEvent) => {
   const wasDragging = isDragging.value
+  const target = event.currentTarget as HTMLElement | null
+  target?.releasePointerCapture?.(event.pointerId)
   stopDragging()
   if (!wasDragging) {
     isOpen.value = !isOpen.value
@@ -321,6 +330,7 @@ watch(isOpen, (open) => {
       type="button"
       class="grid size-14 cursor-grab place-items-center overflow-hidden rounded-full border border-white/45 bg-surface/35 p-2 shadow-main backdrop-blur-2xl active:cursor-grabbing"
       :aria-label="isOpen ? t('aria.hideMusicPlayer') : t('aria.showMusicPlayer')"
+      style="touch-action: none"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"

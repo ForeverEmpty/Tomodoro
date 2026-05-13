@@ -34,7 +34,7 @@ const timerLabel = (key: TimerSettingKey) => {
     <section
       v-for="[key, value] in entries"
       :key="key"
-      class="flex items-center justify-between gap-6 py-4"
+      class="flex flex-col items-stretch gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
     >
       <div>
         <h2 class="m-0 text-sm font-medium text-text-main">{{ timerLabel(key) }}</h2>
@@ -45,7 +45,7 @@ const timerLabel = (key: TimerSettingKey) => {
         type="number"
         min="0"
         :value="value"
-        class="h-10 w-48 rounded-lg border border-border-default bg-surface px-3 text-sm text-text-main outline-none focus:ring-2 focus:ring-control-bg"
+        class="h-10 w-full rounded-lg border border-border-default bg-surface px-3 text-sm text-text-main outline-none focus:ring-2 focus:ring-control-bg sm:w-48"
         @input="emit('updateTimer', key, ($event.target as HTMLInputElement).value)"
       />
     </section>

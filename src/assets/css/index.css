@@ -119,6 +119,15 @@
 }
 
 @layer components {
+  .mobile-x-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .mobile-x-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
   .music-list-scroll {
     scrollbar-gutter: stable;
     scrollbar-width: thin;

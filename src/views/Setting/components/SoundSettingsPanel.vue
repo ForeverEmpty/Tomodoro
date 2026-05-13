@@ -81,8 +81,8 @@ onBeforeUnmount(() => {
       <p class="m-0 mt-1 text-xs text-text-muted">{{ t('sound.description') }}</p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <div class="relative w-64">
+    <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div class="relative w-full sm:w-64">
         <button
           type="button"
           class="flex h-10 w-full items-center justify-between rounded-lg border border-border-default bg-surface px-3 text-left text-sm text-text-main shadow-sm outline-none transition hover:bg-control-bg/60 focus:ring-2 focus:ring-control-bg"
@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="inline-flex h-10 items-center gap-2 rounded-lg border border-border-default bg-surface px-4 text-sm font-medium text-text-main shadow-sm transition hover:bg-control-bg/60 focus:outline-none focus:ring-2 focus:ring-control-bg"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border-default bg-surface px-4 text-sm font-medium text-text-main shadow-sm transition hover:bg-control-bg/60 focus:outline-none focus:ring-2 focus:ring-control-bg"
         @click="previewSelectedSound"
       >
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">

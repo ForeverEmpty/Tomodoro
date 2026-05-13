@@ -388,7 +388,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .meting-player-shell {
-  width: min(26rem, calc(100vw - 1.5rem));
+  width: min(26rem, calc(100vw - 3rem));
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 0.45);
   border-radius: 1.5rem;

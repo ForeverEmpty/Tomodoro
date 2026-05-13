@@ -8,7 +8,7 @@ const { formattedTime } = storeToRefs(timerStore)
 
 <template>
   <p
-    class="text-[120px] md:text-[180px] font-thin text-text-main leading-none tracking-tighter tabular-nums select-none"
+    class="select-none text-[88px] font-thin leading-none tracking-tighter text-text-main tabular-nums sm:text-[120px] md:text-[180px]"
   >
     {{ formattedTime }}
   </p>

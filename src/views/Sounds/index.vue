@@ -439,13 +439,13 @@ watch(playlists, (nextPlaylists) => {
 </script>
 
 <template>
-  <section class="flex min-h-[calc(100vh-6rem)] w-full flex-col px-6 pb-8 pt-2">
+  <section class="flex min-h-[calc(100vh-7rem)] w-full flex-col px-4 pb-36 pt-2 md:min-h-[calc(100vh-6rem)] md:px-6 md:pb-8">
     <div class="mb-5 flex items-center justify-between gap-4">
       <div>
         <p class="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
           {{ t('sounds.title') }}
         </p>
-        <h1 class="m-0 mt-1 text-3xl font-semibold text-text-main">
+        <h1 class="m-0 mt-1 text-2xl font-semibold text-text-main md:text-3xl">
           {{ t('sounds.musicLibrary') }}
         </h1>
       </div>
@@ -453,7 +453,7 @@ watch(playlists, (nextPlaylists) => {
       <MiniTasks placement="bottom" />
     </div>
 
-    <div class="grid min-h-0 flex-1 grid-cols-[17rem_minmax(0,1fr)]">
+    <div class="grid min-h-0 flex-1 grid-cols-1 gap-5 md:grid-cols-[17rem_minmax(0,1fr)] md:gap-0">
       <SoundsSidebar
         :active-category-id="activeView.type === 'category' ? activeView.id : ''"
         :active-playlist-id="activeView.type === 'playlist' ? activeView.id : ''"
@@ -465,7 +465,7 @@ watch(playlists, (nextPlaylists) => {
         @select-playlist="activeView = { type: 'playlist', id: $event }"
       />
 
-      <div class="flex min-h-0 flex-col border-l border-border-soft pl-5">
+      <div class="flex min-h-0 flex-col border-t border-border-soft pt-5 md:border-l md:border-t-0 md:pl-5 md:pt-0">
         <HotMusicList
           v-if="activeHotboardType"
           class="min-h-0 flex-1"

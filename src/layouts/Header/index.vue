@@ -36,15 +36,15 @@ const themeAriaLabel = computed(() => {
 </script>
 
 <template>
-  <nav class="fixed inset-x-0 top-0 z-50 h-16 bg-transparent px-6 backdrop-blur md:px-12">
-    <div class="mx-auto flex h-full w-full max-w-6xl items-center justify-between">
-      <div class="flex items-center gap-2">
+  <nav class="fixed inset-x-0 top-0 z-50 bg-bg-main/70 px-4 py-3 backdrop-blur md:h-16 md:px-12 md:py-0">
+    <div class="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:flex md:h-full md:flex-nowrap md:justify-between">
+      <div class="flex min-w-0 items-center gap-2">
         <div class="h-2.5 w-2.5 rounded-full bg-accent"></div>
-        <div class="text-sm font-semibold tracking-wider uppercase text-text-main">Tomodoro</div>
+        <div class="truncate text-sm font-semibold tracking-wider uppercase text-text-main">Tomodoro</div>
       </div>
 
-      <div class="flex items-center gap-6">
-        <div class="hidden md:flex gap-8 items-center">
+      <div class="mobile-x-scroll col-span-2 flex w-full items-center overflow-x-auto md:col-auto md:w-auto md:overflow-visible">
+        <div class="flex min-w-max items-center gap-5 md:gap-8">
           <button
             v-for="item in navItems"
             :key="item.path"
@@ -55,11 +55,13 @@ const themeAriaLabel = computed(() => {
             {{ t(item.labelKey) }}
           </button>
         </div>
+      </div>
 
+      <div class="absolute right-4 top-3 flex shrink-0 items-center gap-2 md:static md:justify-self-end md:gap-3">
         <div class="relative">
           <button
             type="button"
-            class="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-default bg-surface px-2.5 text-sm font-medium text-text-main hover:bg-control-bg"
+            class="inline-flex h-9 w-9 items-center justify-center gap-1.5 rounded-full border border-border-default bg-surface text-sm font-medium text-text-main hover:bg-control-bg sm:w-auto sm:px-2.5"
             :aria-label="t('aria.toggleLanguage')"
             aria-haspopup="listbox"
             :aria-expanded="isLanguageOpen"
@@ -67,9 +69,9 @@ const themeAriaLabel = computed(() => {
             @keydown.esc="isLanguageOpen = false"
           >
             <span aria-hidden="true">{{ languageFlags[language] }}</span>
-            <span class="font-mono text-xs">{{ language === 'zh-CN' ? '中文' : 'EN' }}</span>
+            <span class="hidden font-mono text-xs sm:inline">{{ language === 'zh-CN' ? '中文' : 'EN' }}</span>
             <svg
-              class="size-3.5 text-text-muted transition"
+              class="hidden size-3.5 text-text-muted transition sm:block"
               :class="{ 'rotate-180': isLanguageOpen }"
               viewBox="0 0 24 24"
               fill="none"

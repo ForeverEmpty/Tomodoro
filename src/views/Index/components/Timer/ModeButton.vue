@@ -11,7 +11,7 @@ defineProps<ModeButtonProps>()
 
 <template>
   <button
-    class="rounded-full px-6 py-2 font-sans text-xs font-semibold uppercase tracking-[0.08em] transition-all duration-200"
+    class="rounded-full px-4 py-2 font-sans text-xs font-semibold uppercase tracking-[0.08em] transition-all duration-200 sm:px-6"
     :class="{
       'border border-border-default bg-surface text-text-main shadow-sm': isActive,
       'text-text-muted hover:text-hover-text': !isActive,

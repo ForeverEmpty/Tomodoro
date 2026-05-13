@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import MiniTaskItem from './MiniTaskItem.vue'
 import { useI18n } from '@/i18n'
 import type { Task } from '@/stores/tasksStore'
@@ -6,7 +7,7 @@ import type { Task } from '@/stores/tasksStore'
 defineProps<{
   tasks: Task[]
   pendingCount: number
-  placement?: 'top' | 'bottom'
+  panelStyle?: Record<string, string>
 }>()
 
 const emit = defineEmits<{
@@ -14,12 +15,18 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const panelElement = ref<HTMLElement | null>(null)
+
+defineExpose({
+  panelElement,
+})
 </script>
 
 <template>
   <div
-    class="absolute right-0 z-50 w-72 rounded-2xl border border-white/45 bg-surface/45 p-4 shadow-main backdrop-blur-2xl"
-    :class="placement === 'bottom' ? 'top-18' : 'bottom-18'"
+    ref="panelElement"
+    class="fixed z-50 w-[min(18rem,calc(100vw-2rem))] rounded-2xl border border-white/45 bg-surface/45 p-4 shadow-main backdrop-blur-2xl"
+    :style="panelStyle"
   >
     <div class="mb-3 flex items-center justify-between border-b border-border-soft pb-2">
       <h2 class="m-0 text-xs font-bold uppercase tracking-[0.08em] text-text-main">

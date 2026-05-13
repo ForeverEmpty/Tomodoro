@@ -34,7 +34,7 @@ const focusBackgroundStyle = computed(() => {
 
 <template>
   <section
-    class="-mt-24 flex min-h-screen w-full flex-col items-center justify-end bg-cover bg-center pb-10 pt-24 relative"
+    class="relative -mt-28 flex min-h-screen w-full flex-col items-center justify-end bg-cover bg-center px-4 pb-28 pt-28 sm:-mt-24 sm:pb-10 sm:pt-24"
     :style="focusBackgroundStyle"
   >
     <video
@@ -46,7 +46,7 @@ const focusBackgroundStyle = computed(() => {
       playsinline
       :src="settingsStore.activeBackground"
     />
-    <div class="flex items-end gap-3 relative z-10">
+    <div class="relative z-10 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row sm:items-end">
       <MiniTimer />
       <MiniTasks />
     </div>

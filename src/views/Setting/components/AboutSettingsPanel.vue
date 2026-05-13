@@ -40,9 +40,9 @@ const { t } = useI18n()
         <li
           v-for="release in timeline"
           :key="release.version"
-          class="relative grid grid-cols-[7rem_1fr] gap-4 pb-8 last:pb-0"
+          class="relative grid grid-cols-1 gap-2 pb-8 last:pb-0 sm:grid-cols-[7rem_1fr] sm:gap-4"
         >
-          <div class="pt-1 text-right">
+          <div class="pt-1 text-left sm:text-right">
             <p class="m-0 text-xs font-medium text-text-muted">
               {{ release.date || t('about.unreleased') }}
             </p>

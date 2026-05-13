@@ -40,7 +40,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
 
 <template>
   <main class="flex min-h-0 flex-col">
-    <div class="flex items-center justify-between gap-4 border-b border-border-soft pb-4">
+    <div class="flex flex-col items-start justify-between gap-3 border-b border-border-soft pb-4 sm:flex-row sm:items-center sm:gap-4">
       <div class="min-w-0">
         <p class="m-0 text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
           {{ activeView?.source }}
@@ -49,12 +49,12 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
           {{ activeView?.name }}
         </h2>
       </div>
-      <p class="m-0 font-mono text-xs text-text-muted">
+      <p class="m-0 shrink-0 font-mono text-xs text-text-muted">
         {{ isLoading ? t('common.loading') : t('common.tracks', { count: tracks.length }) }}
       </p>
     </div>
 
-    <div class="music-list-scroll min-h-0 flex-1 overflow-y-auto py-4 pr-2">
+    <div class="music-list-scroll min-h-0 flex-1 overflow-y-auto py-4 pr-0 sm:pr-2">
       <p v-if="isLoading" class="m-0 px-4 py-8 text-center text-sm text-text-muted">
         {{ t('sounds.loadingHot') }}
       </p>
@@ -72,7 +72,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
         <div
           v-for="track in tracks"
           :key="`${track.index}-${track.url}`"
-          class="group grid grid-cols-[minmax(0,1fr)_2.5rem_2.5rem] items-center gap-2 rounded-xl px-3 py-2 text-left transition duration-200 hover:bg-bg-main/30 hover:shadow-sm"
+          class="group grid grid-cols-[minmax(0,1fr)_2.25rem_2.25rem] items-center gap-1.5 rounded-xl px-2 py-2 text-left transition duration-200 hover:bg-bg-main/30 hover:shadow-sm sm:grid-cols-[minmax(0,1fr)_2.5rem_2.5rem] sm:gap-2 sm:px-3"
           :class="
             activeTrackId === track.url
               ? 'border border-selected-border bg-selected-bg text-selected-text'
@@ -81,7 +81,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
         >
           <button
             type="button"
-            class="grid min-w-0 grid-cols-[2.5rem_3rem_minmax(0,1fr)_6rem] items-center gap-3 text-left"
+            class="grid min-w-0 grid-cols-[2rem_2.5rem_minmax(0,1fr)] items-center gap-2 text-left sm:grid-cols-[2.5rem_3rem_minmax(0,1fr)_6rem] sm:gap-3"
             @click="emit('playTrack', track)"
           >
             <span class="font-mono text-xs text-text-muted tabular-nums transition group-hover:text-text-main">
@@ -92,7 +92,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
               alt=""
               loading="lazy"
               decoding="async"
-              class="size-10 rounded-xl border border-border-default bg-surface object-cover"
+              class="size-9 rounded-xl border border-border-default bg-surface object-cover sm:size-10"
             />
             <span class="min-w-0">
               <span class="block truncate text-sm font-semibold text-text-main transition group-hover:translate-x-1">
@@ -102,7 +102,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
                 {{ track.extra?.artist_names || track.extra?.album || t('music.unknownArtist') }}
               </span>
             </span>
-            <span class="truncate text-right text-xs text-text-muted">
+            <span class="hidden truncate text-right text-xs text-text-muted sm:block">
               {{ track.extra?.duration_text || track.hot_value }}
             </span>
           </button>
@@ -110,7 +110,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
           <div class="relative flex justify-center">
             <button
               type="button"
-              class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
+              class="inline-flex size-8 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main sm:size-9"
               :aria-expanded="openTrackId === track.url"
               :aria-label="t('aria.addTrackToPlaylist')"
               @click="togglePlaylistMenu(track.url)"
@@ -162,7 +162,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
           </div>
 
           <span
-            class="inline-flex size-9 items-center justify-center rounded-full border transition group-hover:bg-text-main group-hover:text-bg-main"
+            class="inline-flex size-8 items-center justify-center rounded-full border transition group-hover:bg-text-main group-hover:text-bg-main sm:size-9"
             :class="
               activeTrackId === track.url && isPlaying
                 ? 'border-selected-border bg-surface text-text-main shadow-sm'

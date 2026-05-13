@@ -26,7 +26,7 @@ const { t } = useI18n()
 <template>
   <div
     v-if="variant === 'floating'"
-    class="flex items-center gap-5 rounded-full border border-white/45 bg-surface/35 px-3 py-2 shadow-main backdrop-blur-2xl"
+    class="flex max-w-full flex-wrap items-center justify-center gap-3 rounded-3xl border border-white/45 bg-surface/35 px-3 py-2 shadow-main backdrop-blur-2xl sm:flex-nowrap sm:gap-5 sm:rounded-full"
   >
     <ModeSwitchButton :active-mode="activeMode" @switch="switchMode" />
     <MiniTimerDisplay :time="formattedTime" />

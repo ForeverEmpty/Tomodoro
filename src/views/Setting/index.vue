@@ -116,7 +116,7 @@ const onBackgroundUpload = async (event: Event) => {
 </script>
 
 <template>
-  <section class="flex w-full max-w-5xl gap-8 px-6 pb-12 pt-8">
+  <section class="flex w-full max-w-5xl flex-col gap-6 px-4 pb-32 pt-4 md:flex-row md:gap-8 md:px-6 md:pb-12 md:pt-8">
     <SettingsSidebar
       :categories="categories"
       :active-category="activeCategory"
