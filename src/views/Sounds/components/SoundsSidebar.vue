@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MiniTimer from '@/components/MiniTimer/index.vue'
+import { useI18n } from '@/i18n'
 import type { PlatformCategory, Playlist } from '../types'
 
 const newPlaylistName = defineModel<string>('newPlaylistName', { required: true })
@@ -16,6 +17,8 @@ const emit = defineEmits<{
   selectCategory: [categoryId: string]
   selectPlaylist: [playlistId: string]
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -23,7 +26,7 @@ const emit = defineEmits<{
     <div class="min-h-0 flex-1 overflow-y-auto pr-1">
       <div class="mb-4">
         <p class="m-0 mb-2 px-2 text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
-          Categories
+          {{ t('sounds.categories') }}
         </p>
         <button
           v-for="category in categories"
@@ -50,7 +53,7 @@ const emit = defineEmits<{
     <div class="mt-4 border-t border-border-soft pt-3">
       <div>
         <p class="m-0 mb-2 px-2 text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
-          Playlists
+          {{ t('sounds.playlists') }}
         </p>
         <button
           v-for="playlist in playlists"
@@ -73,12 +76,12 @@ const emit = defineEmits<{
             v-model="newPlaylistName"
             type="text"
             class="h-9 min-w-0 flex-1 rounded-xl border border-border-default bg-transparent px-3 text-sm text-text-main outline-none placeholder:text-text-muted focus:ring-2 focus:ring-control-bg"
-            placeholder="New playlist"
+            :placeholder="t('playlist.createPlaceholder')"
           />
           <button
             type="submit"
             class="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-border-default text-text-main transition hover:bg-bg-main/30"
-            aria-label="Create playlist"
+            :aria-label="t('aria.createPlaylist')"
           >
             <svg
               class="size-4"

@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import MiniTasks from '@/components/MiniTasks/index.vue'
 import type { MusicTrack } from '@/config/music'
+import { useI18n } from '@/i18n'
 import { useMusicStore } from '@/stores/musicStore'
 import HotMusicList from './components/HotMusicList.vue'
 import MusicTrackList from './components/MusicTrackList.vue'
@@ -19,6 +20,7 @@ import type {
 
 const musicStore = useMusicStore()
 const { currentTrack, isPlaying, playerSource } = storeToRefs(musicStore)
+const { t } = useI18n()
 const RECENT_PLAYLIST_ID = 'recent'
 const RECENT_TRACK_LIMIT = 20
 const PLAYLISTS_STORAGE_KEY = 'tomodoro-sounds-playlists'
@@ -130,7 +132,7 @@ const recentTracks = ref<(MusicTrack | PlaylistHotTrack)[]>([])
 const playlistItems = computed<Playlist[]>(() => [
   {
     id: RECENT_PLAYLIST_ID,
-    name: 'Recently Played',
+    name: t('playlist.recentlyPlayed'),
     count: recentTracks.value.length,
     trackIds: recentTracks.value
       .filter((track): track is MusicTrack => !isHotPlaylistTrack(track))
@@ -147,12 +149,13 @@ const activeListView = computed<MusicListView | undefined>(() => {
       ? {
           id: playlist.id,
           name: playlist.name,
-          source: 'Playlist',
+          source: t('sounds.sourcePlaylist'),
         }
       : undefined
   }
 
-  return categories.value.find((category) => category.id === activeView.value.id)
+  const category = categories.value.find((item) => item.id === activeView.value.id)
+  return category ? translateCategory(category) : undefined
 })
 
 const visibleTracks = computed(() => {
@@ -202,6 +205,28 @@ const activeHotTrackId = computed(() => (
 const isHotPlaylistTrack = (track: MusicTrack | PlaylistHotTrack): track is PlaylistHotTrack => (
   'auto' in track
 )
+
+const translateCategory = (category: PlatformCategory): PlatformCategory => {
+  const labels: Record<string, Parameters<typeof t>[0]> = {
+    ambient: 'sounds.ambient',
+    'hot-netease': 'sounds.cloudHot',
+    'hot-qq': 'sounds.qqHot',
+    local: 'sounds.local',
+  }
+  const sources: Record<string, Parameters<typeof t>[0]> = {
+    ambient: 'sounds.builtIn',
+  }
+  const labelKey = labels[category.id]
+  const sourceKey = sources[category.id]
+
+  return {
+    ...category,
+    name: labelKey ? t(labelKey) : category.name,
+    source: sourceKey ? t(sourceKey) : category.source,
+  }
+}
+
+const translatedCategories = computed(() => categories.value.map(translateCategory))
 
 const addRecentTrack = (track: MusicTrack | PlaylistHotTrack) => {
   recentTracks.value = [
@@ -258,7 +283,7 @@ const hotTrackId = (track: HotMusicItem) => (
 const toPlaylistHotTrack = (track: HotMusicItem): PlaylistHotTrack => ({
   id: hotTrackId(track),
   title: track.title,
-  artist: track.extra?.artist_names || track.extra?.album || 'Unknown artist',
+  artist: track.extra?.artist_names || track.extra?.album || t('music.unknownArtist'),
   cover: track.cover,
   auto: track.url,
   durationText: track.extra?.duration_text || track.hot_value,
@@ -301,7 +326,7 @@ const fetchHotMusic = async (type: HotboardType) => {
       category.count = hotMusicItems.value[type].length
     }
   } catch {
-    hotMusicErrors.value[type] = 'Failed to load hot music.'
+    hotMusicErrors.value[type] = t('sounds.hotLoadError')
   } finally {
     hotMusicLoading.value[type] = false
   }
@@ -417,8 +442,12 @@ watch(playlists, (nextPlaylists) => {
   <section class="flex min-h-[calc(100vh-6rem)] w-full flex-col px-6 pb-8 pt-2">
     <div class="mb-5 flex items-center justify-between gap-4">
       <div>
-        <p class="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">Sounds</p>
-        <h1 class="m-0 mt-1 text-3xl font-semibold text-text-main">Music Library</h1>
+        <p class="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
+          {{ t('sounds.title') }}
+        </p>
+        <h1 class="m-0 mt-1 text-3xl font-semibold text-text-main">
+          {{ t('sounds.musicLibrary') }}
+        </h1>
       </div>
 
       <MiniTasks placement="bottom" />
@@ -428,7 +457,7 @@ watch(playlists, (nextPlaylists) => {
       <SoundsSidebar
         :active-category-id="activeView.type === 'category' ? activeView.id : ''"
         :active-playlist-id="activeView.type === 'playlist' ? activeView.id : ''"
-        :categories="categories"
+        :categories="translatedCategories"
         v-model:new-playlist-name="newPlaylistName"
         :playlists="playlistItems"
         @create-playlist="createPlaylist"

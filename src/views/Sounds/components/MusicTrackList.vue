@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { MusicTrack } from '@/config/music'
+import { useI18n } from '@/i18n'
 import type { MusicListView, Playlist, PlaylistHotTrack } from '../types'
 
 type ListTrack = MusicTrack | PlaylistHotTrack
@@ -18,6 +19,7 @@ defineProps<{
 const openTrackId = ref<string | null>(null)
 const isRenaming = ref(false)
 const renameValue = ref('')
+const { t } = useI18n()
 
 const emit = defineEmits<{
   addToPlaylist: [track: ListTrack, playlistId: string]
@@ -28,6 +30,20 @@ const emit = defineEmits<{
 }>()
 
 const isHotTrack = (track: ListTrack): track is PlaylistHotTrack => 'auto' in track
+
+const localTrackTitle = (track: MusicTrack) => {
+  const titleKeys: Record<string, Parameters<typeof t>[0]> = {
+    bell: 'music.bell',
+    chime: 'music.chime',
+    'soft-ding': 'music.softDing',
+    'ambient-quiet-sound-of-rain': 'music.quietRain',
+  }
+  const titleKey = titleKeys[track.id]
+
+  return titleKey ? t(titleKey) : track.title
+}
+
+const trackTitle = (track: ListTrack) => (isHotTrack(track) ? track.title : localTrackTitle(track))
 
 const isTrackInPlaylist = (track: ListTrack, playlist: Playlist) => {
   if (isHotTrack(track)) {
@@ -104,13 +120,13 @@ const submitRename = (activeView?: MusicListView) => {
       </div>
       <div class="flex shrink-0 items-center gap-2">
         <p class="m-0 font-mono text-xs text-text-muted">
-          {{ tracks.length }} tracks
+          {{ t('common.tracks', { count: tracks.length }) }}
         </p>
         <template v-if="canManagePlaylist">
           <button
             type="button"
             class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
-            aria-label="Rename playlist"
+            :aria-label="t('aria.renamePlaylist')"
             @click="startRename(activeView)"
           >
             <svg
@@ -130,7 +146,7 @@ const submitRename = (activeView?: MusicListView) => {
           <button
             type="button"
             class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
-            aria-label="Delete playlist"
+            :aria-label="t('aria.deletePlaylist')"
             @click="activeView && emit('deletePlaylist', activeView.id)"
           >
             <svg
@@ -157,7 +173,7 @@ const submitRename = (activeView?: MusicListView) => {
         v-if="tracks.length === 0"
         class="m-0 px-4 py-8 text-center text-sm text-text-muted"
       >
-        No tracks here yet.
+        {{ t('sounds.emptyTracks') }}
       </p>
       <div v-else class="grid gap-2">
         <div
@@ -188,7 +204,7 @@ const submitRename = (activeView?: MusicListView) => {
                 class="block truncate text-sm font-semibold transition group-hover:translate-x-1"
                 :class="currentTrack?.id === track.id ? 'text-selected-text' : 'text-text-main'"
               >
-                {{ track.title }}
+                {{ trackTitle(track) }}
               </span>
               <span
                 class="block truncate text-xs transition group-hover:translate-x-1 group-hover:text-text-main/70"
@@ -198,7 +214,7 @@ const submitRename = (activeView?: MusicListView) => {
               </span>
             </span>
             <span class="truncate text-xs text-text-muted transition group-hover:text-text-main/70">
-              {{ isHotTrack(track) ? (track.source === 'qq-music' ? 'QQ Music' : 'Cloud Music') : 'Local audio' }}
+              {{ isHotTrack(track) ? (track.source === 'qq-music' ? t('music.qqMusic') : t('music.cloudMusic')) : t('music.localAudio') }}
             </span>
           </button>
 
@@ -207,7 +223,7 @@ const submitRename = (activeView?: MusicListView) => {
               type="button"
               class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
               :aria-expanded="openTrackId === track.id"
-              aria-label="Add track to playlist"
+              :aria-label="t('aria.addTrackToPlaylist')"
               @click="togglePlaylistMenu(track.id)"
             >
               <svg
@@ -234,7 +250,7 @@ const submitRename = (activeView?: MusicListView) => {
                   v-if="playlists.length === 0"
                   class="m-0 px-3 py-2 text-xs text-text-muted"
                 >
-                  No playlists yet.
+                  {{ t('playlist.empty') }}
                 </p>
                 <button
                   v-for="playlist in playlists"
@@ -249,7 +265,7 @@ const submitRename = (activeView?: MusicListView) => {
                     v-if="isTrackInPlaylist(track, playlist)"
                     class="ml-2 shrink-0 text-[10px] text-text-muted"
                   >
-                    Added
+                    {{ t('common.added') }}
                   </span>
                 </button>
               </div>
@@ -260,7 +276,7 @@ const submitRename = (activeView?: MusicListView) => {
             v-if="removable"
             type="button"
             class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
-            aria-label="Remove track from playlist"
+            :aria-label="t('aria.removeTrackFromPlaylist')"
             @click="emit('removeTrack', track.id)"
           >
             <svg

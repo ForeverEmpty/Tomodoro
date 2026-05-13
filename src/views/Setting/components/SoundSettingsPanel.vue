@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { defaultTimerSound } from '@/config/setting'
 import type { SoundOption, TimerSoundId } from '@/config/setting'
+import { useI18n } from '@/i18n'
 
 const props = defineProps<{
   selectedSound: TimerSoundId
@@ -17,6 +18,7 @@ const emit = defineEmits<{
 
 const isOpen = ref(false)
 const previewAudio = ref<HTMLAudioElement | null>(null)
+const { t } = useI18n()
 
 const selectedOption = computed(() => {
   return props.options.find((option) => option.id === props.selectedSound) ?? defaultTimerSound
@@ -75,8 +77,8 @@ onBeforeUnmount(() => {
 <template>
   <section class="max-w-2xl space-y-6">
     <div>
-      <h2 class="m-0 text-sm font-medium text-text-main">Timer Complete</h2>
-      <p class="m-0 mt-1 text-xs text-text-muted">Choose the sound played when a countdown ends.</p>
+      <h2 class="m-0 text-sm font-medium text-text-main">{{ t('sound.timerComplete') }}</h2>
+      <p class="m-0 mt-1 text-xs text-text-muted">{{ t('sound.description') }}</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
@@ -143,13 +145,15 @@ onBeforeUnmount(() => {
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M8 5v14l11-7-11-7Z" fill="currentColor" />
         </svg>
-        Preview
+        {{ t('sound.preview') }}
       </button>
     </div>
 
     <div class="w-full max-w-sm space-y-2">
       <div class="flex items-center justify-between">
-        <label for="sound-volume" class="text-sm font-medium text-text-main">Volume</label>
+        <label for="sound-volume" class="text-sm font-medium text-text-main">
+          {{ t('sound.volume') }}
+        </label>
         <span class="text-xs font-medium text-text-muted">{{ volumePercent }}%</span>
       </div>
       <input
@@ -160,7 +164,7 @@ onBeforeUnmount(() => {
         step="1"
         :value="volumePercent"
         class="h-2 w-full cursor-pointer accent-accent"
-        aria-label="Timer complete sound volume"
+        :aria-label="t('aria.timerCompleteSoundVolume')"
         @input="updateVolume"
       />
     </div>

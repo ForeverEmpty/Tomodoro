@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '@/i18n'
+
 defineProps<{
   isRunning: boolean
 }>()
@@ -7,6 +9,8 @@ const emit = defineEmits<{
   toggle: []
   reset: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -14,7 +18,7 @@ const emit = defineEmits<{
     <button
       type="button"
       class="inline-flex size-9 items-center justify-center rounded-full bg-text-main text-bg-main hover:bg-hover-dark"
-      :aria-label="isRunning ? 'Pause timer' : 'Start timer'"
+      :aria-label="isRunning ? t('aria.pauseTimer') : t('aria.startTimer')"
       @click="emit('toggle')"
     >
       <svg
@@ -35,7 +39,7 @@ const emit = defineEmits<{
     <button
       type="button"
       class="inline-flex size-9 items-center justify-center rounded-full border border-white/45 bg-bg-main/35 text-text-main backdrop-blur-xl hover:bg-surface/55"
-      aria-label="Reset timer"
+      :aria-label="t('aria.resetTimer')"
       @click="emit('reset')"
     >
       <svg

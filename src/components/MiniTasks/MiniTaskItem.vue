@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from '@/i18n'
 import type { Task } from '@/stores/tasksStore'
 
 defineProps<{
@@ -8,6 +9,8 @@ defineProps<{
 const emit = defineEmits<{
   toggle: [id: number]
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -20,7 +23,7 @@ const emit = defineEmits<{
       :class="
         task.completed ? 'border-accent bg-accent text-white' : 'text-text-muted hover:text-text-main'
       "
-      :aria-label="task.completed ? 'Mark task as pending' : 'Mark task as completed'"
+      :aria-label="task.completed ? t('aria.markTaskPending') : t('aria.markTaskCompleted')"
       @click="emit('toggle', task.id)"
     >
       <span v-if="task.completed">✓</span>

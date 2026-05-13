@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MiniTaskItem from './MiniTaskItem.vue'
+import { useI18n } from '@/i18n'
 import type { Task } from '@/stores/tasksStore'
 
 defineProps<{
@@ -11,6 +12,8 @@ defineProps<{
 const emit = defineEmits<{
   toggleTask: [id: number]
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -19,8 +22,12 @@ const emit = defineEmits<{
     :class="placement === 'bottom' ? 'top-18' : 'bottom-18'"
   >
     <div class="mb-3 flex items-center justify-between border-b border-border-soft pb-2">
-      <h2 class="m-0 text-xs font-bold uppercase tracking-[0.08em] text-text-main">Tasks</h2>
-      <span class="font-mono text-[10px] text-text-muted">{{ pendingCount }} left</span>
+      <h2 class="m-0 text-xs font-bold uppercase tracking-[0.08em] text-text-main">
+        {{ t('tasks.title') }}
+      </h2>
+      <span class="font-mono text-[10px] text-text-muted">
+        {{ t('miniTasks.left', { count: pendingCount }) }}
+      </span>
     </div>
 
     <ul v-if="tasks.length > 0" class="max-h-56 space-y-2 overflow-y-auto pr-1">
@@ -36,7 +43,7 @@ const emit = defineEmits<{
       v-else
       class="m-0 px-3 py-4 text-center text-sm text-text-muted"
     >
-      No tasks yet.
+      {{ t('tasks.emptyMini') }}
     </p>
   </div>
 </template>

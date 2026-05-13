@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '@/i18n'
+
 defineProps<{
   isOpen: boolean
   pendingCount: number
@@ -7,6 +9,8 @@ defineProps<{
 const emit = defineEmits<{
   toggle: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -14,7 +18,7 @@ const emit = defineEmits<{
     type="button"
     class="relative inline-flex size-15 items-center justify-center rounded-full border border-white/45 bg-surface/35 text-text-main shadow-main backdrop-blur-2xl hover:bg-surface/55"
     :aria-expanded="isOpen"
-    aria-label="Toggle mini task list"
+    :aria-label="t('aria.toggleMiniTasks')"
     @click="emit('toggle')"
   >
     <svg

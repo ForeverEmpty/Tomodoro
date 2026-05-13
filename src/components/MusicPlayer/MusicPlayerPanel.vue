@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from '@/i18n'
 import { useMusicStore } from '@/stores/musicStore'
 
 defineProps<{
@@ -22,6 +23,7 @@ type MetingElement = HTMLElement & {
 const musicStore = useMusicStore()
 const { currentTrack, metingLoop, metingOrder, playerKey, playerSource, playMode, shouldAutoplay } =
   storeToRefs(musicStore)
+const { t } = useI18n()
 const metingElement = ref<MetingElement | null>(null)
 const playbackErrorMessage = ref('')
 let hookedPlayer: APlayerInstance | null = null
@@ -34,14 +36,27 @@ let playbackAttemptSequence = 0
 
 const playModeLabel = computed(() => {
   if (playMode.value === 'repeat-one') {
-    return '单曲循环'
+    return t('playMode.repeatOne')
   }
 
   if (playMode.value === 'shuffle') {
-    return '随机播放'
+    return t('playMode.shuffle')
   }
 
-  return '列表循环'
+  return t('playMode.repeatList')
+})
+
+const currentTrackTitle = computed(() => {
+  const track = currentTrack.value
+  const titleKeys: Record<string, Parameters<typeof t>[0]> = {
+    bell: 'music.bell',
+    chime: 'music.chime',
+    'soft-ding': 'music.softDing',
+    'ambient-quiet-sound-of-rain': 'music.quietRain',
+  }
+  const titleKey = track ? titleKeys[track.id] : undefined
+
+  return titleKey ? t(titleKey) : track?.title
 })
 
 const playerAttributes = computed(() => {
@@ -186,7 +201,7 @@ const scheduleAudioSourceValidation = (attempt = 0) => {
       }
 
       musicStore.setPlaybackState(false)
-      showPlaybackError('该歌曲暂时无法播放，播放地址不可用。')
+      showPlaybackError(t('music.playbackErrorNoSource'))
     })()
   }, 500)
 }
@@ -216,7 +231,7 @@ const schedulePlaybackErrorCheck = () => {
     }
 
     musicStore.setPlaybackState(false)
-    showPlaybackError('该歌曲暂时无法播放，可能需要会员权限或源站不可用。')
+    showPlaybackError(t('music.playbackErrorUnavailable'))
   }, 5200)
 
   scheduleAudioSourceValidation()
@@ -336,7 +351,7 @@ onBeforeUnmount(() => {
     <div class="meting-player-head">
       <div class="min-w-0">
         <p class="m-0 truncate font-mono text-sm font-semibold text-text-main">
-          {{ currentTrack?.title }}
+          {{ currentTrackTitle }}
         </p>
         <p class="m-0 mt-0.5 truncate text-xs text-text-muted">
           {{ currentTrack?.artist }}

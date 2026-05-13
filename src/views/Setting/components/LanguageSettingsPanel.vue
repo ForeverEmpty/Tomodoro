@@ -1,33 +1,25 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-
-import type { ThemeMode } from '@/config/setting'
-import { useI18n } from '@/i18n'
+import type { LanguageMode } from '@/config/setting'
+import { languageOptions, useI18n } from '@/i18n'
 
 const props = defineProps<{
-  theme: ThemeMode
-  options: { label: string; value: ThemeMode }[]
+  language: LanguageMode
 }>()
 
 const emit = defineEmits<{
-  updateTheme: [theme: ThemeMode]
+  updateLanguage: [language: LanguageMode]
 }>()
 
-const isOpen = ref(false)
 const { t } = useI18n()
-
-const fallbackOption = { label: 'System', value: 'system' as const }
+const isOpen = ref(false)
 
 const selectedOption = computed(() => {
-  return props.options.find((option) => option.value === props.theme) ?? fallbackOption
+  return languageOptions.find((option) => option.value === props.language) ?? languageOptions[0]
 })
 
-const toggleDropdown = () => {
-  isOpen.value = !isOpen.value
-}
-
-const selectTheme = (theme: ThemeMode) => {
-  emit('updateTheme', theme)
+const selectLanguage = (language: LanguageMode) => {
+  emit('updateLanguage', language)
   isOpen.value = false
 }
 </script>
@@ -35,8 +27,8 @@ const selectTheme = (theme: ThemeMode) => {
 <template>
   <section class="max-w-2xl space-y-3">
     <div>
-      <h2 class="m-0 text-sm font-medium text-text-main">{{ t('theme.title') }}</h2>
-      <p class="m-0 mt-1 text-xs text-text-muted">{{ t('theme.description') }}</p>
+      <h2 class="m-0 text-sm font-medium text-text-main">{{ t('language.title') }}</h2>
+      <p class="m-0 mt-1 text-xs text-text-muted">{{ t('language.description') }}</p>
     </div>
 
     <div class="relative w-56">
@@ -45,9 +37,9 @@ const selectTheme = (theme: ThemeMode) => {
         class="flex h-10 w-full items-center justify-between rounded-lg border border-border-default bg-surface px-3 text-left text-sm text-text-main shadow-sm outline-none transition hover:bg-control-bg/60 focus:ring-2 focus:ring-control-bg"
         aria-haspopup="listbox"
         :aria-expanded="isOpen"
-        @click="toggleDropdown"
+        @click="isOpen = !isOpen"
       >
-        <span>{{ selectedOption.label }}</span>
+        <span>{{ selectedOption?.label }}</span>
         <svg
           class="h-4 w-4 text-text-muted transition"
           :class="{ 'rotate-180': isOpen }"
@@ -71,22 +63,22 @@ const selectTheme = (theme: ThemeMode) => {
         role="listbox"
       >
         <button
-          v-for="option in options"
+          v-for="option in languageOptions"
           :key="option.value"
           type="button"
           class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition hover:bg-control-bg/70"
           :class="
-            option.value === theme
+            option.value === language
               ? 'bg-control-bg text-text-main'
               : 'text-text-muted hover:text-text-main'
           "
           role="option"
-          :aria-selected="option.value === theme"
-          @click="selectTheme(option.value)"
+          :aria-selected="option.value === language"
+          @click="selectLanguage(option.value)"
         >
           <span>{{ option.label }}</span>
           <span
-            v-if="option.value === theme"
+            v-if="option.value === language"
             class="h-2 w-2 rounded-full bg-accent"
             aria-hidden="true"
           />

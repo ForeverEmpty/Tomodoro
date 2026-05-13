@@ -1,20 +1,34 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from '@/i18n'
 import type { TimerMode } from '@/stores/timerStore'
 
-defineProps<{
+const props = defineProps<{
   activeMode: TimerMode
 }>()
 
 const emit = defineEmits<{
   switch: []
 }>()
+
+const { t } = useI18n()
+
+const activeModeLabel = computed(() => {
+  if (props.activeMode === 'Break') {
+    return t('mode.break')
+  }
+  if (props.activeMode === 'Rest') {
+    return t('mode.rest')
+  }
+  return t('mode.focus')
+})
 </script>
 
 <template>
   <button
     type="button"
     class="inline-flex size-11 items-center justify-center rounded-full border border-white/45 bg-bg-main/35 text-text-main backdrop-blur-xl hover:bg-surface/55"
-    :aria-label="`Switch timer mode from ${activeMode}`"
+    :aria-label="t('aria.switchTimerMode', { mode: activeModeLabel })"
     @click="emit('switch')"
   >
     <svg

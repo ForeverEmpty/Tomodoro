@@ -1,6 +1,7 @@
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type TimerSettingKey = 'focus' | 'break' | 'rest'
 export type TimerSoundId = 'bell' | 'chime' | 'soft-ding'
+export type LanguageMode = 'zh-CN' | 'en-US'
 
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
@@ -20,6 +21,7 @@ export interface AppSetting {
     timerComplete: TimerSoundId
     volume: number
   }
+  language: LanguageMode
   theme: ThemeMode
 }
 
@@ -75,5 +77,6 @@ export const defaultSetting = {
     timerComplete: defaultTimerSound.id,
     volume: 0.7,
   },
+  language: 'zh-CN',
   theme: 'system',
 } satisfies AppSetting

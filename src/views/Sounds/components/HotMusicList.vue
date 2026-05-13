@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from '@/i18n'
 import type { HotMusicItem, MusicListView, Playlist } from '../types'
 
 defineProps<{
@@ -14,6 +15,7 @@ defineProps<{
 }>()
 
 const openTrackId = ref<string | null>(null)
+const { t } = useI18n()
 
 const emit = defineEmits<{
   addToPlaylist: [track: HotMusicItem, playlistId: string]
@@ -48,13 +50,13 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
         </h2>
       </div>
       <p class="m-0 font-mono text-xs text-text-muted">
-        {{ isLoading ? 'Loading' : `${tracks.length} tracks` }}
+        {{ isLoading ? t('common.loading') : t('common.tracks', { count: tracks.length }) }}
       </p>
     </div>
 
     <div class="music-list-scroll min-h-0 flex-1 overflow-y-auto py-4 pr-2">
       <p v-if="isLoading" class="m-0 px-4 py-8 text-center text-sm text-text-muted">
-        Loading hot music...
+        {{ t('sounds.loadingHot') }}
       </p>
       <p v-else-if="error" class="m-0 px-4 py-8 text-center text-sm text-text-muted">
         {{ error }}
@@ -63,7 +65,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
         v-else-if="tracks.length === 0"
         class="m-0 px-4 py-8 text-center text-sm text-text-muted"
       >
-        No hot music here yet.
+        {{ t('sounds.emptyHot') }}
       </p>
 
       <div v-else class="grid gap-2">
@@ -97,7 +99,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
                 {{ track.title }}
               </span>
               <span class="block truncate text-xs text-text-muted transition group-hover:translate-x-1 group-hover:text-text-main/70">
-                {{ track.extra?.artist_names || track.extra?.album || 'Unknown artist' }}
+                {{ track.extra?.artist_names || track.extra?.album || t('music.unknownArtist') }}
               </span>
             </span>
             <span class="truncate text-right text-xs text-text-muted">
@@ -110,7 +112,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
               type="button"
               class="inline-flex size-9 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-main/35 hover:text-text-main"
               :aria-expanded="openTrackId === track.url"
-              aria-label="Add track to playlist"
+              :aria-label="t('aria.addTrackToPlaylist')"
               @click="togglePlaylistMenu(track.url)"
             >
               <svg
@@ -137,7 +139,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
                   v-if="playlists.length === 0"
                   class="m-0 px-3 py-2 text-xs text-text-muted"
                 >
-                  No playlists yet.
+                  {{ t('playlist.empty') }}
                 </p>
                 <button
                   v-for="playlist in playlists"
@@ -152,7 +154,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
                     v-if="isTrackInPlaylist(track, playlist)"
                     class="ml-2 shrink-0 text-[10px] text-text-muted"
                   >
-                    Added
+                    {{ t('common.added') }}
                   </span>
                 </button>
               </div>
@@ -186,7 +188,7 @@ const isTrackInPlaylist = (track: HotMusicItem, playlist: Playlist) => (
     </div>
 
     <p v-if="updatedAt" class="m-0 border-t border-border-soft pt-3 text-right text-[11px] text-text-muted">
-      Updated {{ updatedAt }}
+      {{ t('sounds.updated', { time: updatedAt }) }}
     </p>
   </main>
 </template>

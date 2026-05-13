@@ -6,7 +6,13 @@ import {
   defaultTimerSound,
   defaultTimerSounds,
 } from '@/config/setting'
-import type { AppSetting, ThemeMode, TimerSettingKey, TimerSoundId } from '@/config/setting'
+import type {
+  AppSetting,
+  LanguageMode,
+  ThemeMode,
+  TimerSettingKey,
+  TimerSoundId,
+} from '@/config/setting'
 import { useStorage } from '@/hooks/useStorage'
 import {
   storeBackground,
@@ -31,6 +37,10 @@ const normalizeBackground = (background: string) => {
 
 const isThemeMode = (value: unknown): value is ThemeMode => {
   return value === 'system' || value === 'light' || value === 'dark'
+}
+
+const isLanguageMode = (value: unknown): value is LanguageMode => {
+  return value === 'zh-CN' || value === 'en-US'
 }
 
 const isTimerSoundId = (value: unknown): value is TimerSoundId => {
@@ -79,6 +89,10 @@ const hydrateSetting = (raw: string | null): AppSetting => {
 
     if (isThemeMode(parsed.theme)) {
       setting.theme = parsed.theme
+    }
+
+    if (isLanguageMode(parsed.language)) {
+      setting.language = parsed.language
     }
 
     if (parsed.sound && isTimerSoundId(parsed.sound.timerComplete)) {
@@ -208,6 +222,10 @@ export const useSettingsStore = defineStore('settings', () => {
     setting.sound.volume = Math.min(1, Math.max(0, volume))
   }
 
+  const setLanguage = (language: LanguageMode) => {
+    setting.language = language
+  }
+
   watch(
     setting,
     () => {
@@ -232,5 +250,6 @@ export const useSettingsStore = defineStore('settings', () => {
     clearUploadedBackground,
     setTimerCompleteSound,
     setSoundVolume,
+    setLanguage,
   }
 })

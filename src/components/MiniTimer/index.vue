@@ -5,6 +5,7 @@ import MiniTimerDisplay from './MiniTimerDisplay.vue'
 import ModeSwitchButton from './ModeSwitchButton.vue'
 import RoundsProgress from './RoundsProgress.vue'
 import { useMiniTimerMode } from './useMiniTimerMode'
+import { useI18n } from '@/i18n'
 import { useTimerStore } from '@/stores/timerStore'
 
 withDefaults(
@@ -19,6 +20,7 @@ withDefaults(
 const timerStore = useTimerStore()
 const { activeMode, completedRounds, formattedTime, isRunning } = storeToRefs(timerStore)
 const { switchMode } = useMiniTimerMode(activeMode, timerStore.setMode)
+const { t } = useI18n()
 </script>
 
 <template>
@@ -39,7 +41,7 @@ const { switchMode } = useMiniTimerMode(activeMode, timerStore.setMode)
   <div v-else class="w-full border-t border-border-soft pt-4">
     <div class="mb-3 flex items-center justify-between gap-3">
       <p class="m-0 text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
-        Timer
+        {{ t('nav.timer') }}
       </p>
       <RoundsProgress :completed-rounds="completedRounds" :total-rounds="timerStore.totalRounds" />
     </div>

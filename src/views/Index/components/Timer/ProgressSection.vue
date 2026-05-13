@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from '@/i18n'
 import { useTimerStore } from '@/stores/timerStore'
 
 const timerStore = useTimerStore()
 const { completedRounds } = storeToRefs(timerStore)
+const { t } = useI18n()
 
 const roundIndexes = computed(() =>
   Array.from({ length: timerStore.totalRounds }, (_, index) => index),
@@ -13,7 +15,9 @@ const roundIndexes = computed(() =>
 
 <template>
   <section class="flex flex-col items-center gap-2 font-sans">
-    <p class="m-0 text-xs uppercase tracking-[0.08em] text-text-muted">Round Progress</p>
+    <p class="m-0 text-xs uppercase tracking-[0.08em] text-text-muted">
+      {{ t('timer.roundProgress') }}
+    </p>
     <div class="flex items-center gap-2">
       <span
         v-for="index in roundIndexes"

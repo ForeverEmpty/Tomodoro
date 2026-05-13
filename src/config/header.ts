@@ -6,28 +6,28 @@ export const header = () => {
   const items = [
     {
       path: '/',
-      label: 'Timer',
+      labelKey: 'nav.timer',
       onClick: () => {
         router.push('/')
       },
     },
     {
       path: '/focus',
-      label: 'Focus',
+      labelKey: 'nav.focus',
       onClick: () => {
         router.push('/focus')
       },
     },
     {
       path: '/sounds',
-      label: 'Sounds',
+      labelKey: 'nav.sounds',
       onClick: () => {
         router.push('/sounds')
       },
     },
     {
       path: '/setting',
-      label: 'Settings',
+      labelKey: 'nav.settings',
       onClick: () => {
         router.push('/setting')
       },

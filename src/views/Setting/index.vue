@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import AboutSettingsPanel from './components/AboutSettingsPanel.vue'
 import FocusSettingsPanel from './components/FocusSettingsPanel.vue'
+import LanguageSettingsPanel from './components/LanguageSettingsPanel.vue'
 import SettingsHeader from './components/SettingsHeader.vue'
 import SettingsSidebar from './components/SettingsSidebar.vue'
 import SoundSettingsPanel from './components/SoundSettingsPanel.vue'
@@ -11,12 +12,14 @@ import TimerSettingsPanel from './components/TimerSettingsPanel.vue'
 import { releaseInfo } from '@/config/release'
 import { defaultSetting } from '@/config/setting'
 import type { ThemeMode, TimerSettingKey } from '@/config/setting'
+import { useI18n } from '@/i18n'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useTimerStore, type TimerMode } from '@/stores/timerStore'
 
 const settingsStore = useSettingsStore()
 const timerStore = useTimerStore()
 const { setting, backgroundOptions, soundOptions } = storeToRefs(settingsStore)
+const { t } = useI18n()
 
 onMounted(() => {
   settingsStore.loadUploadedBackground()
@@ -25,19 +28,20 @@ onMounted(() => {
 const aboutKey = 'about'
 const activeCategory = ref(Object.keys(defaultSetting)[0] ?? aboutKey)
 
-const categoryLabels: Record<string, string> = {
-  timer: 'Timer',
-  focus: 'Focus',
-  sound: 'Sound',
-  theme: 'Theme',
-  about: 'About',
+const categoryLabelKeys: Record<string, Parameters<typeof t>[0]> = {
+  timer: 'settings.timer',
+  focus: 'settings.focus',
+  sound: 'settings.sound',
+  language: 'settings.language',
+  theme: 'settings.theme',
+  about: 'settings.about',
 }
 
-const themeOptions: { label: string; value: ThemeMode }[] = [
-  { label: 'System', value: 'system' },
-  { label: 'Light', value: 'light' },
-  { label: 'Dark', value: 'dark' },
-]
+const themeOptions = computed<{ label: string; value: ThemeMode }[]>(() => [
+  { label: t('theme.system'), value: 'system' },
+  { label: t('theme.light'), value: 'light' },
+  { label: t('theme.dark'), value: 'dark' },
+])
 
 const timerModeMap: Record<TimerSettingKey, TimerMode> = {
   focus: 'Focus',
@@ -46,13 +50,17 @@ const timerModeMap: Record<TimerSettingKey, TimerMode> = {
 }
 
 const categories = computed(() => [
-  ...Object.keys(defaultSetting).map((key) => ({
-    key,
-    label: categoryLabels[key] ?? toTitleCase(key),
-  })),
+  ...Object.keys(defaultSetting).map((key) => {
+    const labelKey = categoryLabelKeys[key]
+
+    return {
+      key,
+      label: labelKey ? t(labelKey) : toTitleCase(key),
+    }
+  }),
   {
     key: aboutKey,
-    label: categoryLabels[aboutKey] ?? 'About',
+    label: t(categoryLabelKeys[aboutKey] ?? 'settings.about'),
   },
 ])
 
@@ -62,6 +70,26 @@ const activeLabel = computed(
 
 const timerEntries = computed(
   () => Object.entries(setting.value.timer) as [TimerSettingKey, number][],
+)
+
+const translatedBackgroundOptions = computed(() =>
+  backgroundOptions.value.map((option) => ({
+    ...option,
+    label: t(`background.${option.id}` as Parameters<typeof t>[0]),
+  })),
+)
+
+const soundLabelKeys: Record<string, Parameters<typeof t>[0]> = {
+  bell: 'sound.bell',
+  chime: 'sound.chime',
+  'soft-ding': 'sound.softDing',
+}
+
+const translatedSoundOptions = computed(() =>
+  soundOptions.value.map((option) => ({
+    ...option,
+    label: t(soundLabelKeys[option.id] ?? 'sound.bell'),
+  })),
 )
 
 const toTitleCase = (value: string) => {
@@ -111,10 +139,16 @@ const onBackgroundUpload = async (event: Event) => {
         @update-theme="settingsStore.setTheme"
       />
 
+      <LanguageSettingsPanel
+        v-else-if="activeCategory === 'language'"
+        :language="setting.language"
+        @update-language="settingsStore.setLanguage"
+      />
+
       <FocusSettingsPanel
         v-else-if="activeCategory === 'focus'"
         :selected-background="setting.focus.background"
-        :background-options="backgroundOptions"
+        :background-options="translatedBackgroundOptions"
         @select-background="settingsStore.setFocusBackground"
         @upload-background="onBackgroundUpload"
       />
@@ -123,7 +157,7 @@ const onBackgroundUpload = async (event: Event) => {
         v-else-if="activeCategory === 'sound'"
         :selected-sound="setting.sound.timerComplete"
         :volume="setting.sound.volume"
-        :options="soundOptions"
+        :options="translatedSoundOptions"
         @update-sound="settingsStore.setTimerCompleteSound"
         @update-volume="settingsStore.setSoundVolume"
       />

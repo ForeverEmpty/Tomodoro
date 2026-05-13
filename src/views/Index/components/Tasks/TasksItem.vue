@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from '@/i18n'
 import type { Task } from '@/stores/tasksStore'
 
 defineProps<{
@@ -9,6 +10,8 @@ const emit = defineEmits<{
   toggle: [id: number]
   delete: [id: number]
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -32,7 +35,7 @@ const emit = defineEmits<{
     <button
       type="button"
       class="inline-flex h-7 w-7 items-center justify-center rounded-full text-text-muted hover:bg-control-bg hover:text-text-main"
-      aria-label="Delete task"
+      :aria-label="t('aria.deleteTask')"
       @click="emit('delete', task.id)"
     >
       <svg

@@ -2,10 +2,12 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import MusicPlayerPanel from './MusicPlayerPanel.vue'
+import { useI18n } from '@/i18n'
 import { useMusicStore } from '@/stores/musicStore'
 
 const musicStore = useMusicStore()
 const { isPlaying } = storeToRefs(musicStore)
+const { t } = useI18n()
 const props = defineProps<{
   dockInSounds?: boolean
   visible?: boolean
@@ -318,7 +320,7 @@ watch(isOpen, (open) => {
     <button
       type="button"
       class="grid size-14 cursor-grab place-items-center overflow-hidden rounded-full border border-white/45 bg-surface/35 p-2 shadow-main backdrop-blur-2xl active:cursor-grabbing"
-      :aria-label="isOpen ? 'Hide music player' : 'Show music player'"
+      :aria-label="isOpen ? t('aria.hideMusicPlayer') : t('aria.showMusicPlayer')"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"

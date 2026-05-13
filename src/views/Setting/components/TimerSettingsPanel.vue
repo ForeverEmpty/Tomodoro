@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TimerSettingKey } from '@/config/setting'
+import { useI18n } from '@/i18n'
 
 defineProps<{
   entries: [TimerSettingKey, number][]
@@ -14,6 +15,18 @@ const toTitleCase = (value: string) => {
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, (firstLetter) => firstLetter.toUpperCase())
 }
+
+const { t } = useI18n()
+
+const timerLabel = (key: TimerSettingKey) => {
+  const labels: Record<TimerSettingKey, Parameters<typeof t>[0]> = {
+    focus: 'mode.focus',
+    break: 'mode.break',
+    rest: 'mode.rest',
+  }
+
+  return labels[key] ? t(labels[key]) : toTitleCase(key)
+}
 </script>
 
 <template>
@@ -24,8 +37,8 @@ const toTitleCase = (value: string) => {
       class="flex items-center justify-between gap-6 py-4"
     >
       <div>
-        <h2 class="m-0 text-sm font-medium text-text-main">{{ toTitleCase(key) }}</h2>
-        <p class="m-0 mt-1 text-xs text-text-muted">Duration in minutes</p>
+        <h2 class="m-0 text-sm font-medium text-text-main">{{ timerLabel(key) }}</h2>
+        <p class="m-0 mt-1 text-xs text-text-muted">{{ t('timer.durationInMinutes') }}</p>
       </div>
 
       <input

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '@/i18n'
+
 export interface BackgroundOption {
   id: string
   label: string
@@ -16,6 +18,8 @@ const emit = defineEmits<{
   selectBackground: [background: string]
   uploadBackground: [event: Event]
 }>()
+
+const { t } = useI18n()
 
 const isVideoBackground = (background: BackgroundOption): boolean => {
   if (background.isVideo) return true
@@ -37,10 +41,10 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
     <section class="space-y-4">
       <div>
         <h2 class="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-text-muted">
-          Background
+          {{ t('focus.background') }}
         </h2>
         <p class="m-0 mt-1 text-sm text-text-subtle">
-          Choose a default image or upload your own focus background.
+          {{ t('focus.backgroundHelp') }}
         </p>
       </div>
 
@@ -82,11 +86,13 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
     </section>
 
     <section class="space-y-3">
-      <h2 class="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-text-muted">Upload</h2>
+      <h2 class="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-text-muted">
+        {{ t('focus.upload') }}
+      </h2>
       <label
         class="inline-flex cursor-pointer items-center rounded-lg border border-border-default bg-surface px-4 py-2 text-sm font-medium text-text-main hover:bg-control-bg"
       >
-        Upload image
+        {{ t('focus.uploadImage') }}
         <input
           type="file"
           accept="image/*,video/*"
