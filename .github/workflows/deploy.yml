@@ -52,6 +52,7 @@ jobs:
           else
             echo "VITE_BASE_PATH=/${repo_name}/" >> "$GITHUB_ENV"
           fi
+          echo "VITE_ROUTER_HISTORY=hash" >> "$GITHUB_ENV"
 
       - name: Build
         run: pnpm run build
