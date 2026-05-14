@@ -23,6 +23,14 @@ const { t } = useI18n()
 const backgroundUploadError = ref('')
 const MAX_MOBILE_BACKGROUND_VIDEO_WIDTH = 1920
 const MAX_MOBILE_BACKGROUND_VIDEO_HEIGHT = 1080
+const MAX_MOBILE_BACKGROUND_VIDEO_LONG_SIDE = Math.max(
+  MAX_MOBILE_BACKGROUND_VIDEO_WIDTH,
+  MAX_MOBILE_BACKGROUND_VIDEO_HEIGHT,
+)
+const MAX_MOBILE_BACKGROUND_VIDEO_SHORT_SIDE = Math.min(
+  MAX_MOBILE_BACKGROUND_VIDEO_WIDTH,
+  MAX_MOBILE_BACKGROUND_VIDEO_HEIGHT,
+)
 
 onMounted(() => {
   settingsStore.loadUploadedBackground()
@@ -147,7 +155,18 @@ const loadVideoMetadata = (file: File) => {
       reject(new Error('Unsupported video source'))
     }
     video.src = url
+    video.load()
   })
+}
+
+const isMobileSafeVideoSize = (width: number, height: number) => {
+  const longSide = Math.max(width, height)
+  const shortSide = Math.min(width, height)
+
+  return (
+    longSide <= MAX_MOBILE_BACKGROUND_VIDEO_LONG_SIDE &&
+    shortSide <= MAX_MOBILE_BACKGROUND_VIDEO_SHORT_SIDE
+  )
 }
 
 const validateBackgroundUpload = async (file: File) => {
@@ -157,10 +176,7 @@ const validateBackgroundUpload = async (file: File) => {
 
   try {
     const { height, width } = await loadVideoMetadata(file)
-    if (
-      isMobileViewport() &&
-      (width > MAX_MOBILE_BACKGROUND_VIDEO_WIDTH || height > MAX_MOBILE_BACKGROUND_VIDEO_HEIGHT)
-    ) {
+    if (isMobileViewport() && !isMobileSafeVideoSize(width, height)) {
       backgroundUploadError.value = t('focus.uploadVideoTooLarge', {
         height,
         width,
@@ -168,8 +184,10 @@ const validateBackgroundUpload = async (file: File) => {
       return false
     }
   } catch {
-    backgroundUploadError.value = t('focus.uploadVideoUnsupported')
-    return false
+    if (!isMobileViewport()) {
+      backgroundUploadError.value = t('focus.uploadVideoUnsupported')
+      return false
+    }
   }
 
   return true
