@@ -88,15 +88,39 @@ export interface StoredBackground {
   name: string
 }
 
+const inferMediaType = (file: File) => {
+  if (file.type) {
+    return file.type
+  }
+
+  const extension = file.name.split('.').pop()?.toLowerCase()
+  const mediaTypes: Record<string, string> = {
+    avif: 'image/avif',
+    gif: 'image/gif',
+    jpeg: 'image/jpeg',
+    jpg: 'image/jpeg',
+    mov: 'video/quicktime',
+    mp4: 'video/mp4',
+    ogg: 'video/ogg',
+    png: 'image/png',
+    svg: 'image/svg+xml',
+    webm: 'video/webm',
+    webp: 'image/webp',
+  }
+
+  return extension ? (mediaTypes[extension] ?? '') : ''
+}
+
 export const storeBackground = async (id: string, file: File): Promise<void> => {
   return runWithDB((database) => new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME], 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
+    const type = inferMediaType(file)
 
     const background: StoredBackground = {
       id,
-      data: file,
-      type: file.type,
+      data: type && type !== file.type ? file.slice(0, file.size, type) : file,
+      type,
       name: file.name,
     }
 

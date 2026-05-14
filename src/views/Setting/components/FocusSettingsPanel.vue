@@ -89,17 +89,30 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
       <h2 class="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-text-muted">
         {{ t('focus.upload') }}
       </h2>
-      <label
-        class="inline-flex cursor-pointer items-center rounded-lg border border-border-default bg-surface px-4 py-2 text-sm font-medium text-text-main hover:bg-control-bg"
-      >
-        {{ t('focus.uploadImage') }}
-        <input
-          type="file"
-          accept="image/*,video/*"
-          class="sr-only"
-          @change="emit('uploadBackground', $event)"
-        />
-      </label>
+      <div class="flex flex-wrap gap-2">
+        <label
+          class="relative inline-flex cursor-pointer items-center overflow-hidden rounded-lg border border-border-default bg-surface px-4 py-2 text-sm font-medium text-text-main hover:bg-control-bg"
+        >
+          {{ t('focus.uploadImage') }}
+          <input
+            type="file"
+            accept="image/*"
+            class="absolute inset-0 cursor-pointer opacity-0"
+            @change="emit('uploadBackground', $event)"
+          />
+        </label>
+        <label
+          class="relative inline-flex cursor-pointer items-center overflow-hidden rounded-lg border border-border-default bg-surface px-4 py-2 text-sm font-medium text-text-main hover:bg-control-bg"
+        >
+          {{ t('focus.uploadVideo') }}
+          <input
+            type="file"
+            accept="video/mp4,video/webm,video/ogg,video/quicktime,video/*"
+            class="absolute inset-0 cursor-pointer opacity-0"
+            @change="emit('uploadBackground', $event)"
+          />
+        </label>
+      </div>
     </section>
   </div>
 </template>

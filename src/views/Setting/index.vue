@@ -107,11 +107,17 @@ const updateTimerSetting = (key: TimerSettingKey, rawValue: string) => {
 }
 
 const onBackgroundUpload = async (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
   if (!file) {
     return
   }
-  await settingsStore.setUploadedBackground(file)
+
+  try {
+    await settingsStore.setUploadedBackground(file)
+  } finally {
+    input.value = ''
+  }
 }
 </script>
 

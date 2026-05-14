@@ -49,21 +49,9 @@ const parseVersion = (version) => {
 
 const formatVersion = ({ major, minor, patch }) => `${major}.${minor}.${patch}`
 
-const compareVersions = (left, right) => {
-  const leftVersion = parseVersion(left)
-  const rightVersion = parseVersion(right)
-  const leftParts = [leftVersion.major, leftVersion.minor, leftVersion.patch]
-  const rightParts = [rightVersion.major, rightVersion.minor, rightVersion.patch]
-
-  for (let index = 0; index < leftParts.length; index += 1) {
-    if (leftParts[index] > rightParts[index]) return 1
-    if (leftParts[index] < rightParts[index]) return -1
-  }
-
-  return 0
+const appendBuildMetadata = (version, shortSha) => {
+  return shortSha === 'dev' ? `${version}-dev` : `${version}+${shortSha}`
 }
-
-const maxVersion = (left, right) => (compareVersions(left, right) >= 0 ? left : right)
 
 const incrementVersion = (version, level) => {
   if (level === 'major') {
@@ -88,18 +76,6 @@ const getBumpLevel = (message) => {
 
   if (/^(fix|perf)(?:\(.+\))?:/.test(message)) {
     return 'patch'
-  }
-
-  return 'patch'
-}
-
-const getHighestBumpLevel = (commits) => {
-  if (commits.some((commit) => getBumpLevel(commit.message) === 'major')) {
-    return 'major'
-  }
-
-  if (commits.some((commit) => getBumpLevel(commit.message) === 'minor')) {
-    return 'minor'
   }
 
   return 'patch'
@@ -173,18 +149,14 @@ const createFallbackTimeline = (currentDisplayVersion) => {
   return reversedReleases
 }
 
-const createTaggedTimeline = (tags, shortSha) => {
+const createTaggedTimeline = (tags, shortSha, currentDisplayVersion) => {
   const timeline = []
   const latestTag = tags[0]?.name ?? ''
   const unreleasedCommits = latestTag ? getCommits(`${latestTag}..HEAD`) : []
 
   if (unreleasedCommits.length > 0) {
-    const nextVersion = formatVersion(
-      incrementVersion(parseVersion(latestTag), getHighestBumpLevel(unreleasedCommits)),
-    )
-
     timeline.push({
-      version: `${nextVersion}+${shortSha}`,
+      version: currentDisplayVersion,
       date: unreleasedCommits[0]?.date ?? formatDate(new Date().toISOString()),
       isCurrent: true,
       changes: unreleasedCommits,
@@ -218,13 +190,11 @@ const createTaggedTimeline = (tags, shortSha) => {
 
 const shortSha = runGit('git rev-parse --short HEAD', 'dev')
 const tags = getTags()
-const fallbackTimelinePreview = tags.length === 0 ? createFallbackTimeline(fallbackVersion) : []
-const computedFallbackVersion = fallbackTimelinePreview[0]?.version ?? fallbackVersion
-const currentFallbackVersion = maxVersion(computedFallbackVersion, fallbackVersion)
-const fallbackDisplayVersion =
-  shortSha === 'dev' ? `${currentFallbackVersion}-dev` : `${currentFallbackVersion}+${shortSha}`
+const fallbackDisplayVersion = appendBuildMetadata(fallbackVersion, shortSha)
 const timeline =
-  tags.length > 0 ? createTaggedTimeline(tags, shortSha) : createFallbackTimeline(fallbackDisplayVersion)
+  tags.length > 0
+    ? createTaggedTimeline(tags, shortSha, fallbackDisplayVersion)
+    : createFallbackTimeline(fallbackDisplayVersion)
 
 const releaseInfo = {
   version: timeline[0]?.version ?? fallbackDisplayVersion,
