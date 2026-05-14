@@ -66,6 +66,7 @@ const panelPlacement = computed(() => {
   const availableRight = width - bubbleRight - EDGE_GAP - PANEL_GAP
   const availableTop = bubbleTop - EDGE_GAP - PANEL_GAP
   const availableBottom = height - bubbleBottom - EDGE_GAP - PANEL_GAP
+  const maxPanelLeft = Math.max(EDGE_GAP, width - EDGE_GAP - actualPanelWidth)
   const verticalTop = clamp(
     bubbleTop,
     EDGE_GAP,
@@ -74,18 +75,46 @@ const panelPlacement = computed(() => {
   const horizontalLeft = clamp(
     bubbleLeft + (BUBBLE_SIZE - actualPanelWidth) / 2,
     EDGE_GAP,
-    Math.max(EDGE_GAP, width - EDGE_GAP - actualPanelWidth),
+    maxPanelLeft,
   )
+
+  if (width < 768) {
+    const shouldOpenBelow = availableBottom >= actualPanelHeight || availableBottom >= availableTop
+    const top = shouldOpenBelow
+      ? clamp(
+          bubbleBottom + PANEL_GAP,
+          EDGE_GAP,
+          Math.max(EDGE_GAP, height - EDGE_GAP - actualPanelHeight),
+        )
+      : clamp(
+          bubbleTop - PANEL_GAP - actualPanelHeight,
+          EDGE_GAP,
+          Math.max(EDGE_GAP, height - EDGE_GAP - actualPanelHeight),
+        )
+
+    return {
+      originClass: shouldOpenBelow ? 'origin-top' : 'origin-bottom',
+      style: {
+        left: '50%',
+        top: `${top}px`,
+        width: `calc(100vw - ${EDGE_GAP * 2}px)`,
+        '--music-panel-anchor-x': '-50%',
+        '--music-panel-anchor-y': '0px',
+        '--music-panel-offset-x': '0px',
+        '--music-panel-offset-y': shouldOpenBelow ? '-10px' : '10px',
+      },
+    }
+  }
 
   if (availableRight >= actualPanelWidth) {
     return {
       originClass: verticalTop > bubbleTop ? 'origin-top-left' : 'origin-bottom-left',
       style: {
-        left: `${bubbleRight + PANEL_GAP}px`,
+        left: `${clamp(bubbleRight + PANEL_GAP, EDGE_GAP, maxPanelLeft)}px`,
         top: `${verticalTop}px`,
         '--music-panel-anchor-x': '0px',
         '--music-panel-anchor-y': '0px',
-        '--music-panel-offset-x': '-10px',
+        '--music-panel-offset-x': '10px',
         '--music-panel-offset-y': '0px',
       },
     }
@@ -99,7 +128,7 @@ const panelPlacement = computed(() => {
         top: `${verticalTop}px`,
         '--music-panel-anchor-x': '-100%',
         '--music-panel-anchor-y': '0px',
-        '--music-panel-offset-x': '10px',
+        '--music-panel-offset-x': '-10px',
         '--music-panel-offset-y': '0px',
       },
     }
@@ -135,16 +164,28 @@ const panelPlacement = computed(() => {
 const dockedPanelStyle = computed(() => {
   const { width, height } = viewport.value
   const { width: actualPanelWidth, height: actualPanelHeight } = panelSize.value
-  const centerX = width < 768 ? width / 2 : width / 2 + 136
-  const left = clamp(
-    centerX - actualPanelWidth / 2,
-    EDGE_GAP,
-    Math.max(EDGE_GAP, width - EDGE_GAP - actualPanelWidth),
-  )
   const top = clamp(
     height - 32 - actualPanelHeight,
     EDGE_GAP,
     Math.max(EDGE_GAP, height - EDGE_GAP - actualPanelHeight),
+  )
+
+  if (width < 768) {
+    return {
+      left: '50%',
+      top: `${top}px`,
+      '--music-panel-anchor-x': '-50%',
+      '--music-panel-anchor-y': '0px',
+      '--music-panel-offset-x': '0px',
+      '--music-panel-offset-y': '10px',
+    }
+  }
+
+  const centerX = width / 2 + 136
+  const left = clamp(
+    centerX - actualPanelWidth / 2,
+    EDGE_GAP,
+    Math.max(EDGE_GAP, width - EDGE_GAP - actualPanelWidth),
   )
 
   return {
@@ -381,6 +422,9 @@ watch(isOpen, (open) => {
 .music-player-host {
   position: fixed;
   z-index: 40;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
   transform: translate(var(--music-panel-anchor-x, 0px), var(--music-panel-anchor-y, 0px));
   transition:
     left 0.34s cubic-bezier(0.22, 1, 0.36, 1),

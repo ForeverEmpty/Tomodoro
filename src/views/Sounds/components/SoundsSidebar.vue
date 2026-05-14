@@ -22,7 +22,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <aside class="flex min-h-0 flex-col md:pr-5">
+  <aside class="flex h-full min-h-0 flex-col md:pr-5">
     <div class="min-h-0 flex-1 overflow-y-visible pr-0 md:overflow-y-auto md:pr-1">
       <div class="mb-4">
         <p class="m-0 mb-2 px-2 text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
@@ -49,7 +49,6 @@ const { t } = useI18n()
           </button>
         </div>
       </div>
-
     </div>
 
     <div class="mt-2 border-t border-border-soft pt-3 md:mt-4">

@@ -439,7 +439,7 @@ watch(playlists, (nextPlaylists) => {
 </script>
 
 <template>
-  <section class="flex min-h-[calc(100vh-7rem)] w-full flex-col px-4 pb-36 pt-2 md:min-h-[calc(100vh-6rem)] md:px-6 md:pb-8">
+  <section class="flex min-h-[calc(100vh-7rem)] w-full flex-col px-4 pb-36 pt-2 md:h-[calc(100vh-6rem)] md:min-h-0 md:overflow-hidden md:px-6 md:pb-8">
     <div class="mb-5 flex items-center justify-between gap-4">
       <div>
         <p class="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
@@ -453,7 +453,7 @@ watch(playlists, (nextPlaylists) => {
       <MiniTasks placement="bottom" />
     </div>
 
-    <div class="grid min-h-0 flex-1 grid-cols-1 gap-5 md:grid-cols-[17rem_minmax(0,1fr)] md:gap-0">
+    <div class="grid min-h-0 flex-1 grid-cols-1 gap-5 md:grid-cols-[17rem_minmax(0,1fr)] md:gap-0 md:overflow-hidden">
       <SoundsSidebar
         :active-category-id="activeView.type === 'category' ? activeView.id : ''"
         :active-playlist-id="activeView.type === 'playlist' ? activeView.id : ''"
@@ -465,7 +465,7 @@ watch(playlists, (nextPlaylists) => {
         @select-playlist="activeView = { type: 'playlist', id: $event }"
       />
 
-      <div class="flex min-h-0 flex-col border-t border-border-soft pt-5 md:border-l md:border-t-0 md:pl-5 md:pt-0">
+      <div class="flex h-[100dvh] min-h-0 flex-col overflow-hidden border-t border-border-soft pt-5 md:h-auto md:border-l md:border-t-0 md:pl-5 md:pt-0">
         <HotMusicList
           v-if="activeHotboardType"
           class="min-h-0 flex-1"
