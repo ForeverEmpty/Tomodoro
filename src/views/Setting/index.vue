@@ -20,6 +20,9 @@ const settingsStore = useSettingsStore()
 const timerStore = useTimerStore()
 const { setting, backgroundOptions, soundOptions } = storeToRefs(settingsStore)
 const { t } = useI18n()
+const backgroundUploadError = ref('')
+const MAX_MOBILE_BACKGROUND_VIDEO_WIDTH = 1920
+const MAX_MOBILE_BACKGROUND_VIDEO_HEIGHT = 1080
 
 onMounted(() => {
   settingsStore.loadUploadedBackground()
@@ -106,6 +109,72 @@ const updateTimerSetting = (key: TimerSettingKey, rawValue: string) => {
   timerStore.setModeDuration(timerModeMap[key], minutes)
 }
 
+const isMobileViewport = () => {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+}
+
+const isVideoFile = (file: File) => {
+  return file.type.startsWith('video/') || /\.(mov|mp4|ogg|webm)$/i.test(file.name)
+}
+
+const loadVideoMetadata = (file: File) => {
+  return new Promise<{ height: number; width: number }>((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const video = document.createElement('video')
+    const cleanup = () => {
+      video.removeAttribute('src')
+      video.load()
+      URL.revokeObjectURL(url)
+    }
+    const timeout = window.setTimeout(() => {
+      cleanup()
+      reject(new Error('Video metadata timeout'))
+    }, 7000)
+
+    video.preload = 'metadata'
+    video.muted = true
+    video.playsInline = true
+    video.onloadedmetadata = () => {
+      window.clearTimeout(timeout)
+      const width = video.videoWidth
+      const height = video.videoHeight
+      cleanup()
+      resolve({ height, width })
+    }
+    video.onerror = () => {
+      window.clearTimeout(timeout)
+      cleanup()
+      reject(new Error('Unsupported video source'))
+    }
+    video.src = url
+  })
+}
+
+const validateBackgroundUpload = async (file: File) => {
+  if (!isVideoFile(file)) {
+    return true
+  }
+
+  try {
+    const { height, width } = await loadVideoMetadata(file)
+    if (
+      isMobileViewport() &&
+      (width > MAX_MOBILE_BACKGROUND_VIDEO_WIDTH || height > MAX_MOBILE_BACKGROUND_VIDEO_HEIGHT)
+    ) {
+      backgroundUploadError.value = t('focus.uploadVideoTooLarge', {
+        height,
+        width,
+      })
+      return false
+    }
+  } catch {
+    backgroundUploadError.value = t('focus.uploadVideoUnsupported')
+    return false
+  }
+
+  return true
+}
+
 const onBackgroundUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -114,6 +183,12 @@ const onBackgroundUpload = async (event: Event) => {
   }
 
   try {
+    backgroundUploadError.value = ''
+    const canUpload = await validateBackgroundUpload(file)
+    if (!canUpload) {
+      return
+    }
+
     await settingsStore.setUploadedBackground(file)
   } finally {
     input.value = ''
@@ -155,6 +230,7 @@ const onBackgroundUpload = async (event: Event) => {
         v-else-if="activeCategory === 'focus'"
         :selected-background="setting.focus.background"
         :background-options="translatedBackgroundOptions"
+        :upload-error="backgroundUploadError"
         @select-background="settingsStore.setFocusBackground"
         @upload-background="onBackgroundUpload"
       />

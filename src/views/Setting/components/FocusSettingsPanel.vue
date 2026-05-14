@@ -12,6 +12,7 @@ export interface BackgroundOption {
 defineProps<{
   selectedBackground: string
   backgroundOptions: BackgroundOption[]
+  uploadError?: string
 }>()
 
 const emit = defineEmits<{
@@ -72,10 +73,9 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
           <video
             v-else-if="background.value"
             class="block h-24 w-full object-cover"
-            autoplay
             muted
-            loop
             playsinline
+            preload="metadata"
             :src="background.value"
           />
           <span class="block bg-surface px-3 py-2 text-xs font-medium text-text-main">
@@ -107,12 +107,15 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
           {{ t('focus.uploadVideo') }}
           <input
             type="file"
-            accept="video/mp4,video/webm,video/ogg,video/quicktime,video/*"
+            accept="video/mp4,video/webm,video/ogg,video/quicktime"
             class="absolute inset-0 cursor-pointer opacity-0"
             @change="emit('uploadBackground', $event)"
           />
         </label>
       </div>
+      <p v-if="uploadError" class="m-0 text-sm text-text-muted">
+        {{ uploadError }}
+      </p>
     </section>
   </div>
 </template>
