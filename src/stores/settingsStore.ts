@@ -58,6 +58,14 @@ const clampSoundVolume = (value: unknown) => {
 
 const isUploadedBackgroundMarker = (value: unknown) => value === 'uploaded'
 
+const isVideoBackgroundFile = (file: File) => {
+  if (file.type.startsWith('video/')) {
+    return true
+  }
+
+  return /\.(mov|mp4|ogg|webm)$/i.test(file.name)
+}
+
 const hydrateSetting = (raw: string | null): AppSetting => {
   const setting = cloneDefaultSetting()
   if (!raw) {
@@ -121,13 +129,13 @@ export const useSettingsStore = defineStore('settings', () => {
   })
 
   const backgroundOptions = computed(() => {
-    const hasUploaded = setting.focus.uploadedBackground === 'uploaded'
-    const uploadedOption = hasUploaded
+    const uploadedUrl = loadedBackgroundUrl.value
+    const uploadedOption = setting.focus.uploadedBackground === 'uploaded' && uploadedUrl
       ? [
           {
             id: 'uploaded',
             label: 'Uploaded',
-            value: loadedBackgroundUrl.value || 'uploaded',
+            value: uploadedUrl,
             selectValue: 'uploaded',
             isVideo: uploadedBackgroundIsVideo.value,
           },
@@ -169,9 +177,14 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const setUploadedBackground = async (file: File): Promise<void> => {
     await storeBackground(UPLOADED_BACKGROUND_ID, file)
+
+    if (loadedBackgroundUrl.value) {
+      revokeObjectURL(loadedBackgroundUrl.value)
+    }
+    loadedBackgroundUrl.value = blobToObjectURL(file)
+    uploadedBackgroundIsVideo.value = isVideoBackgroundFile(file)
     setting.focus.uploadedBackground = 'uploaded'
     setting.focus.background = 'uploaded'
-    await loadUploadedBackground()
   }
 
   const loadUploadedBackground = async (): Promise<void> => {

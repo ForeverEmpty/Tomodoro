@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import MiniTasks from '@/components/MiniTasks/index.vue'
 import MiniTimer from '@/components/MiniTimer/index.vue'
+import { defaultBackgrounds } from '@/config/setting'
 import { useSettingsStore } from '@/stores/settingsStore'
 
 const settingsStore = useSettingsStore()
@@ -30,6 +31,10 @@ const focusBackgroundStyle = computed(() => {
     backgroundImage: `url(${settingsStore.activeBackground})`,
   }
 })
+
+const onVideoBackgroundError = () => {
+  settingsStore.setFocusBackground(defaultBackgrounds[0]?.value ?? '')
+}
 </script>
 
 <template>
@@ -45,6 +50,7 @@ const focusBackgroundStyle = computed(() => {
       loop
       playsinline
       :src="settingsStore.activeBackground"
+      @error="onVideoBackgroundError"
     />
     <div class="relative z-10 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row sm:items-end">
       <MiniTimer />

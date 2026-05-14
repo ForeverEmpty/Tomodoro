@@ -62,7 +62,7 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
           @click="emit('selectBackground', backgroundSelectionKey(background))"
         >
           <img
-            v-if="!isVideoBackground(background)"
+            v-if="background.value && !isVideoBackground(background)"
             :src="background.value"
             alt=""
             loading="lazy"
@@ -70,7 +70,7 @@ const backgroundSelectionKey = (background: BackgroundOption): string => {
             class="block h-24 w-full object-cover"
           />
           <video
-            v-else
+            v-else-if="background.value"
             class="block h-24 w-full object-cover"
             autoplay
             muted
